@@ -1,16 +1,19 @@
-import * as express from 'express';
+import { Request, Response, NextFunction, Router } from 'express';
 import authService from '../../services/auth';
 
-const authRouter = express.Router();
+const authRouter = Router();
 
 /**
  * Call Google Firebase Auth to Confirm Code is right
  */
 
-authRouter.post('/verify-password-code', async (req, res, next) => {
-  const passwordInfo = await authService.verifyPassword(req.body);
-  res.send(passwordInfo);
-});
+authRouter.post(
+  '/verify-password-code',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const passwordInfo = await authService.verifyPassword(req.body, next);
+    res.send(passwordInfo);
+  }
+);
 
 /**
  * Get a specific room by its SID (unique identifier)
@@ -59,7 +62,7 @@ authRouter.post('/verify-password-code', async (req, res, next) => {
 //   }
 // });
 
-authRouter.get('*', async (req, res) => {
+authRouter.get('*', async (req: Request, res: Response) => {
   res.status(404).send('This route does not exist.');
 });
 

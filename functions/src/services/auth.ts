@@ -1,7 +1,11 @@
+import { NextFunction } from 'express';
 import { $apiRequest } from '../utils/https-call';
 
+// Type
+import { IVerifyPassword } from '../types/services/auth';
+
 export default {
-  verifyPassword: async function (options: any) {
+  verifyPassword: async function (options: IVerifyPassword, next: NextFunction) {
     let { apiKey, oobCode } = options;
     try {
       return await $apiRequest({
@@ -10,8 +14,7 @@ export default {
         data: { oobCode },
       });
     } catch (error: any) {
-      console.log('Verify Password code error', error.response.data.error);
-      return error.response.data.error;
+      next(error.response.data.error);
     }
   },
 };
