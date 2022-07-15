@@ -1,5 +1,6 @@
 import { NextFunction } from 'express';
 import { $apiRequest } from '../utils/https-call';
+import { $axiosErrorHandler } from '../utils/axios-error-handler';
 
 // Type
 import { IVerifyPassword } from '../types/services/auth';
@@ -14,7 +15,7 @@ export default {
         data: { oobCode },
       });
     } catch (error: any) {
-      next(error.response.data.error);
+      next(await $axiosErrorHandler(error));
     }
   },
 };
