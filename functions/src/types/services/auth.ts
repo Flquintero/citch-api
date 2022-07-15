@@ -1,4 +1,4 @@
 export interface IVerifyPassword {
-    apiKey:string; 
-    oobCode: string;
-  }
+  apiKey: string;
+  oobCode: string;
+}
