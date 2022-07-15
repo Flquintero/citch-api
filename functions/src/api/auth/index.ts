@@ -14,6 +14,13 @@ authRouter.post(
     res.send(passwordInfo);
   }
 );
+authRouter.post(
+  '/confirm-password-reset',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const passwordInfo = await authService.confirmPasswordReset(req.body, next);
+    res.send(passwordInfo);
+  }
+);
 
 /**
  * Get a specific room by its SID (unique identifier)
