@@ -13,7 +13,7 @@ app.disable('x-powered-by');
 import { IError } from './types/general/errors';
 
 import * as cors from 'cors';
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:8080'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:8080', 'https://www.citch.io'];
 const options: cors.CorsOptions = {
   origin: allowedOrigins,
 };
