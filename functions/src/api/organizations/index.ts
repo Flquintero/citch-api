@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction, Router } from 'express';
-import usersService from '../../services/users';
+import organizationsService from '../../services/organizations';
 
-const usersRouter = Router();
+const organizationsRouter = Router();
 
 /**
  * Call Google Firebase Auth to Confirm Code is right
  */
 
-usersRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
-  res.json(await usersService.list(req.body, next));
+organizationsRouter.get('/create', async (req: Request, res: Response, next: NextFunction) => {
+  res.json(await organizationsService.create(req.body, next));
 });
 
 /**
@@ -18,7 +18,7 @@ usersRouter.post('/create', async (req: Request, res: Response, next: NextFuncti
  * You can use this endpoint to get rooms of any status!
  */
 
-// usersRouter.get('/:sid', async (request, response, next) => {
+// organizationsRouter.get('/:sid', async (request, response, next) => {
 //   const sid: string = request.params.sid;
 
 //   try {
@@ -41,7 +41,7 @@ usersRouter.post('/create', async (req: Request, res: Response, next: NextFuncti
  * The room will not be deleted, but it will no longer appear in the list of in-progress rooms.
  */
 
-// usersRouter.post('/:sid/complete', async (request, response, next) => {
+// organizationsRouter.post('/:sid/complete', async (request, response, next) => {
 //   // Get the SID from the request parameters.
 //   const sid: string = request.params.sid;
 
@@ -58,8 +58,8 @@ usersRouter.post('/create', async (req: Request, res: Response, next: NextFuncti
 //   }
 // });
 
-usersRouter.get('*', async (req: Request, res: Response) => {
+organizationsRouter.get('*', async (req: Request, res: Response) => {
   res.status(404).send('This route does not exist.');
 });
 
-module.exports = usersRouter;
+module.exports = organizationsRouter;
