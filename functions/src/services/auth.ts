@@ -5,13 +5,16 @@ import { $axiosErrorHandler } from '../utils/axios-error-handler';
 // Type
 import { IVerifyPassword, IConfirmPasswordReset } from '../types/services/auth';
 
+const IDENTITY_TOOLKIT_URL = 'https://identitytoolkit.googleapis.com';
+const IDENTITY_TOOLKIT_VERSION = '/v1';
+
 export default {
   verifyPassword: async function (options: IVerifyPassword, next: NextFunction) {
     let { apiKey, oobCode } = options;
     try {
       return await $apiRequest({
         method: 'post',
-        url: `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${apiKey}`,
+        url: `${IDENTITY_TOOLKIT_URL}${IDENTITY_TOOLKIT_VERSION}/accounts:resetPassword?key=${apiKey}`,
         data: { oobCode },
       });
     } catch (error: any) {
@@ -23,7 +26,7 @@ export default {
     try {
       return await $apiRequest({
         method: 'post',
-        url: `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${apiKey}`,
+        url: `${IDENTITY_TOOLKIT_URL}${IDENTITY_TOOLKIT_VERSION}/accounts:resetPassword?key=${apiKey}`,
         data: { oobCode, newPassword },
       });
     } catch (error: any) {

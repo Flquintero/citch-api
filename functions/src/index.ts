@@ -1,8 +1,11 @@
+import 'dotenv/config';
 import * as express from 'express';
-import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
+require('./config/firebase');
+import { functions } from './config/firebase';
+// import * as admin from 'firebase-admin';
+// import * as functions from 'firebase-functions';
 
-admin.initializeApp(functions.config().firebase);
+// admin.initializeApp(functions.config().firebase);
 
 const app = express();
 
