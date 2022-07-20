@@ -7,7 +7,7 @@ const organizationsRouter = Router();
  * Call Google Firebase Auth to Confirm Code is right
  */
 
-organizationsRouter.get('/create', async (req: Request, res: Response, next: NextFunction) => {
+organizationsRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
   res.json(await organizationsService.create(req.body, next));
 });
 

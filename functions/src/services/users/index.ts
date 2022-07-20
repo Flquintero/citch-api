@@ -1,6 +1,6 @@
 import { NextFunction } from 'express';
-import { $axiosErrorHandler } from '../utils/axios-error-handler';
-import { db } from '../config/firebase';
+import { $axiosErrorHandler } from '../../utils/axios-error-handler';
+import { db } from '../../config/firebase';
 
 const USERS_DB = db.collection('users');
 
@@ -23,7 +23,9 @@ export default {
   },
   create: async function (options: any, next: NextFunction) {
     try {
-      return await USERS_DB.add(options);
+      let user = await USERS_DB.add(options);
+      console.log('user', user.path);
+      return user.path;
     } catch (error: any) {
       return next(await $axiosErrorHandler(error));
     }

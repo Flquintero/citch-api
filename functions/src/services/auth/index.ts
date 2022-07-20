@@ -1,9 +1,9 @@
 import { NextFunction } from 'express';
-import { $apiRequest } from '../utils/https-call';
-import { $axiosErrorHandler } from '../utils/axios-error-handler';
+import { $apiRequest } from '../../utils/https-call';
+import { $axiosErrorHandler } from '../../utils/axios-error-handler';
 
 // Type
-import { IVerifyPassword, IConfirmPasswordReset } from '../types/services/auth';
+import { IVerifyPassword, IConfirmPasswordReset } from '../../types/services/auth';
 
 const IDENTITY_TOOLKIT_URL = 'https://identitytoolkit.googleapis.com';
 const IDENTITY_TOOLKIT_VERSION = '/v1';
