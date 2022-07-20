@@ -8,7 +8,7 @@ const usersRouter = Router();
  */
 
 usersRouter.post('/create', async (req: Request, res: Response, next: NextFunction) => {
-  res.json(await usersService.list(req.body, next));
+  res.json(await usersService.create(req.body, next));
 });
 
 /**
