@@ -1,5 +1,6 @@
 import { NextFunction } from 'express';
-import { $axiosErrorHandler } from '../../utils/axios-error-handler';
+import { $firestormErrorHandler } from '../../utils/error-handler';
+import { $getDocumentId } from '../../utils/firestorm-helpers';
 import { db } from '../../config/firebase';
 
 const ORGANIZATIONS_DB = db.collection('organizations');
@@ -8,9 +9,21 @@ const ORGANIZATIONS_DB = db.collection('organizations');
 export default {
   create: async function (options: any, next: NextFunction) {
     try {
-      return await ORGANIZATIONS_DB.add(options);
+      const organization = await ORGANIZATIONS_DB.add(options);
+      return organization.path;
     } catch (error: any) {
-      return next(await $axiosErrorHandler(error));
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  update: async function (options: any, next: NextFunction) {
+    try {
+      const { organizationPathId } = options;
+      return await ORGANIZATIONS_DB.doc(await $getDocumentId(organizationPathId)).update({
+        updateFields: options.updateFields,
+      });
+    } catch (error: any) {
+      console.log('UPDATE ORGANIZATIONS ERROR', error);
+      return next(await $firestormErrorHandler(error));
     }
   },
 };

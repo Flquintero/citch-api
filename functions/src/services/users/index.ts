@@ -1,5 +1,6 @@
 import { NextFunction } from 'express';
-import { $axiosErrorHandler } from '../../utils/axios-error-handler';
+import { $axiosErrorHandler, $firestormErrorHandler } from '../../utils/error-handler';
+import { $getDocumentId } from '../../utils/firestorm-helpers';
 import { db } from '../../config/firebase';
 
 const USERS_DB = db.collection('users');
@@ -14,8 +15,6 @@ export default {
       const allEntries: any[] = [];
       users.forEach((doc: any) => allEntries.push(doc.data()));
       // end helper
-
-      console.log('DATA', allEntries);
       return allEntries;
     } catch (error: any) {
       return next(await $axiosErrorHandler(error));
@@ -24,10 +23,21 @@ export default {
   create: async function (options: any, next: NextFunction) {
     try {
       let user = await USERS_DB.add(options);
-      console.log('user', user.path);
       return user.path;
     } catch (error: any) {
-      return next(await $axiosErrorHandler(error));
+      console.log('CREATE USERS ERROR', error);
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  update: async function (options: any, next: NextFunction) {
+    try {
+      const { userPathId, organizationPathId } = options;
+      return await USERS_DB.doc(await $getDocumentId(userPathId)).update({
+        organization: organizationPathId,
+      });
+    } catch (error: any) {
+      console.log('UPDATE USERS ERROR', error);
+      return next(await $firestormErrorHandler(error));
     }
   },
 };

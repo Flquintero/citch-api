@@ -1,6 +1,6 @@
 import { NextFunction } from 'express';
 import { $apiRequest } from '../../utils/https-call';
-import { $axiosErrorHandler } from '../../utils/axios-error-handler';
+import { $axiosErrorHandler } from '../../utils/error-handler';
 
 // Type
 import { IVerifyPassword, IConfirmPasswordReset } from '../../types/services/auth';
