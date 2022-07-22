@@ -1,7 +1,9 @@
 import { NextFunction } from 'express';
 import { $axiosErrorHandler, $firestormErrorHandler } from '../../utils/error-handler';
 import { $getDocumentId } from '../../utils/firestorm-helpers';
+import { _getCreateUserPayload } from './helpers/payload-builder';
 import { db } from '../../config/firebase';
+import { IUpdateObject } from '../../types/general/services';
 
 const USERS_DB = db.collection('users');
 
@@ -22,18 +24,19 @@ export default {
   },
   create: async function (options: any, next: NextFunction) {
     try {
-      let user = await USERS_DB.add(options);
+      let user = await USERS_DB.add(await _getCreateUserPayload(options));
       return user.path;
     } catch (error: any) {
       console.log('CREATE USERS ERROR', error);
       return next(await $firestormErrorHandler(error));
     }
   },
-  update: async function (options: any, next: NextFunction) {
+  // Brings the pathId as {{collections}}/{{id}} and an updateData object with what needs to be updated
+  update: async function (options: IUpdateObject, next: NextFunction) {
     try {
-      const { userPathId, organizationPathId } = options;
-      return await USERS_DB.doc(await $getDocumentId(userPathId)).update({
-        organization: organizationPathId,
+      const { pathId, updateData } = options;
+      return await USERS_DB.doc(await $getDocumentId(pathId)).update({
+        ...updateData,
       });
     } catch (error: any) {
       console.log('UPDATE USERS ERROR', error);
