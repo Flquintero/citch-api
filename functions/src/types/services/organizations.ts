@@ -1,4 +1,4 @@
-export interface ICreateUserPayload extends ReadableStream<Uint8Array> {
+export interface ICreateOrganization extends ReadableStream<Uint8Array> {
   email: string;
   firstName: string;
   lastName: string;
@@ -6,4 +6,5 @@ export interface ICreateUserPayload extends ReadableStream<Uint8Array> {
   fullName: string;
   uid: string;
   providerId: string;
+  userDocReference: string;
 }

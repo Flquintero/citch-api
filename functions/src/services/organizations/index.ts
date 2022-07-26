@@ -3,12 +3,14 @@ import { $firestormErrorHandler } from '../../utils/error-handler';
 import { $getDocumentId } from '../../utils/firestorm-helpers';
 import { _getCreateOrganizationPayload } from './helpers/payload-builder';
 import { db } from '../../config/firebase';
+import { IUpdateObject } from '../../types/general/services';
+import { ICreateOrganization } from '../../types/services/organizations';
 
 const ORGANIZATIONS_DB = db.collection('organizations');
 
 // Type
 export default {
-  create: async function (options: any, next: NextFunction) {
+  create: async function (options: ICreateOrganization, next: NextFunction) {
     try {
       const organization = await ORGANIZATIONS_DB.add(await _getCreateOrganizationPayload(options));
       return organization.path;
@@ -16,11 +18,11 @@ export default {
       return next(await $firestormErrorHandler(error));
     }
   },
-  update: async function (options: any, next: NextFunction) {
+  update: async function (options: IUpdateObject, next: NextFunction) {
     try {
-      const { organizationPathId } = options;
-      return await ORGANIZATIONS_DB.doc(await $getDocumentId(organizationPathId)).update({
-        updateFields: options.updateFields,
+      const { pathId, updateData } = options;
+      return await ORGANIZATIONS_DB.doc(await $getDocumentId(pathId)).update({
+        ...updateData,
       });
     } catch (error: any) {
       console.log('UPDATE ORGANIZATIONS ERROR', error);

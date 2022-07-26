@@ -1,28 +1,32 @@
 import { NextFunction } from 'express';
-import { $axiosErrorHandler, $firestormErrorHandler } from '../../utils/error-handler';
+import { $firestormErrorHandler } from '../../utils/error-handler';
 import { $getDocumentId } from '../../utils/firestorm-helpers';
 import { _getCreateUserPayload } from './helpers/payload-builder';
 import { db } from '../../config/firebase';
 import { IUpdateObject } from '../../types/general/services';
+import { ICreateUserPayload } from '../../types/services/users';
 
 const USERS_DB = db.collection('users');
 
 // Type
 
 export default {
-  list: async function (options: any, next: NextFunction) {
-    try {
-      const users: any = await USERS_DB.get();
-      //TO DO: Add this as a helper function
-      const allEntries: any[] = [];
-      users.forEach((doc: any) => allEntries.push(doc.data()));
-      // end helper
-      return allEntries;
-    } catch (error: any) {
-      return next(await $axiosErrorHandler(error));
-    }
-  },
-  create: async function (options: any, next: NextFunction) {
+  //NOT USED HERE AS EXAMPLE TO SHOW WE NEED TO DO A FOREACH
+
+  // list: async function (options: any, next: NextFunction) {
+  //   try {
+  //     const users: any = await USERS_DB.get();
+  //     //TO DO: Add this as a helper function
+  //     const allEntries: any[] = [];
+  //     users.forEach((doc: any) => allEntries.push(doc.data()));
+  //     // end helper
+  //     return allEntries;
+  //   } catch (error: any) {
+  //     return next(await $axiosErrorHandler(error));
+  //   }
+  // },
+
+  create: async function (options: ICreateUserPayload, next: NextFunction) {
     try {
       let user = await USERS_DB.add(await _getCreateUserPayload(options));
       return user.path;
