@@ -1,8 +1,7 @@
+import 'dotenv/config';
 import * as express from 'express';
-import * as admin from 'firebase-admin';
-import * as functions from 'firebase-functions';
-
-admin.initializeApp(functions.config().firebase);
+require('./config/firebase');
+import { functions } from './config/firebase';
 
 const app = express();
 
@@ -29,6 +28,7 @@ function errorHandler(
   res: express.Response,
   next: express.NextFunction
 ) {
+  console.log('err', err.message);
   // need status to get error correctly in front end
   // need to structure errors before sending here One for generic and one for each platform
   res.status(err.code).json(err);
