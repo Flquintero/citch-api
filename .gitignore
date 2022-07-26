@@ -64,7 +64,4 @@ node_modules/
 
 # dotenv environment variables file
 .env
-.env.local
 .env.*
-.env.development.local
-.env.production.local
