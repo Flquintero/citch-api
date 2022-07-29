@@ -22,7 +22,7 @@ function getApiResponse(options: ApiRequestOptions) {
     ...options,
     baseURL: process.env.VUE_APP_BASE_API_URL,
     headers: {
-      // 'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json',
     },
   };
