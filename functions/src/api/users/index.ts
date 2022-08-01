@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import usersService from '../../services/users';
 import organizationsService from '../../services/organizations';
-import { $toDocReference } from '../../utils/firestorm-helpers';
-import { $appCheckVerification } from '../../utils/app-check-verification';
+import { $toDocReference } from '../../utils/firebase-firestorm-helpers';
+import { $appCheckVerification } from '../../utils/firebase-app-check-verification';
+import { $idTokenVerification } from '../../utils/firebase-user-token-verification';
 
 const usersRouter = Router();
 
@@ -10,7 +11,7 @@ const usersRouter = Router();
 
 usersRouter.post(
   '/signup',
-  [$appCheckVerification],
+  [$appCheckVerification, $idTokenVerification],
   async (req: Request, res: Response, next: NextFunction) => {
     // creates user from authed user
     let userPathId = await usersService.create(req.body, next);
@@ -31,7 +32,7 @@ usersRouter.post(
 );
 
 usersRouter.get('*', async (req: Request, res: Response) => {
-  res.status(404).send('This route does not exist.');
+  res.status(404).send('Cannot find route');
 });
 
 module.exports = usersRouter;

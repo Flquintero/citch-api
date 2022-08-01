@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import organizationsService from '../../services/organizations';
-import { $appCheckVerification } from '../../utils/app-check-verification';
+import { $appCheckVerification } from '../../utils/firebase-app-check-verification';
+import { $idTokenVerification } from '../../utils/firebase-user-token-verification';
 
 const organizationsRouter = Router();
 
 organizationsRouter.post(
   '/update',
-  [$appCheckVerification],
+  [$appCheckVerification, $idTokenVerification],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await organizationsService.update(req.body, next));
   }

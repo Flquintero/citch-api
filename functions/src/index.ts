@@ -28,7 +28,7 @@ function errorHandler(
   res: express.Response,
   next: express.NextFunction
 ) {
-  console.log('err', err.message);
+  console.log('err', err);
   // need status to get error correctly in front end
   // need to structure errors before sending here One for generic and one for each platform
   res.status(err.code).json(err);
