@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import organizationsService from '../../services/organizations';
-import { $appCheckVerification } from '../../utils/firebase-app-check-verification';
-import { $idTokenVerification } from '../../utils/firebase-user-token-verification';
+import { $appCheckVerification } from '../../utils/firebase/firebase-app-check-verification';
+import { $idTokenVerification } from '../../utils/firebase/firebase-user-token-verification';
 
 const organizationsRouter = Router();
 

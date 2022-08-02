@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import authService from '../../services/auth';
-import { $appCheckVerification } from '../../utils/firebase-app-check-verification';
+import { $appCheckVerification } from '../../utils/firebase/firebase-app-check-verification';
 
 const authRouter = Router();
 

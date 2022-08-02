@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import usersService from '../../services/users';
-import organizationsService from '../../services/organizations';
-import { $toDocReference } from '../../utils/firebase-firestorm-helpers';
-import { $appCheckVerification } from '../../utils/firebase-app-check-verification';
-import { $idTokenVerification } from '../../utils/firebase-user-token-verification';
+// import organizationsService from '../../services/organizations';
+// import { $toDocReference } from '../../utils/firebase/firebase-firestorm-helpers';
+import { $appCheckVerification } from '../../utils/firebase/firebase-app-check-verification';
+import { $idTokenVerification } from '../../utils/firebase/firebase-user-token-verification';
 
 const usersRouter = Router();
 
@@ -14,20 +14,20 @@ usersRouter.post(
   [$appCheckVerification, $idTokenVerification],
   async (req: Request, res: Response, next: NextFunction) => {
     // creates user from authed user
-    let userPathId = await usersService.create(req.body, next);
+    await usersService.create(req, next);
     // creates an org where the owner is the passed user
-    req.body.userDocReference = await $toDocReference(userPathId as string);
-    let organizationPathId = await organizationsService.create(req.body, next);
+    // req.body.userDocReference = await $toDocReference(userPathId as string);
+    // let organizationPathId = await organizationsService.create(req.body, next);
     // updates user with the created or reference
-    res.json(
-      await usersService.update(
-        {
-          pathId: userPathId as string,
-          updateData: { organization: await $toDocReference(organizationPathId as string) },
-        },
-        next
-      )
-    );
+    // res.json(
+    //   await usersService.update(
+    //     {
+    //       pathId: userPathId as string,
+    //       updateData: { organization: await $toDocReference(organizationPathId as string) },
+    //     },
+    //     next
+    //   )
+    // );
   }
 );
 
