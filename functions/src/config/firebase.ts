@@ -10,5 +10,7 @@ admin.initializeApp({
   databaseURL: process.env.APP_FIREBASE_DATABASE_URL,
 });
 
+const FieldValue = admin.firestore.FieldValue;
+
 const db = admin.firestore();
-export { admin, db, functions };
+export { admin, db, functions, FieldValue };
