@@ -6,7 +6,7 @@ let _getCreateUserPayload = async (req: Request, decodedToken: DecodedIdToken | 
   return {
     ...req['body'],
     type: 'OWNER',
-    enabled: 'false',
+    enabled: 'true',
     createdOn: FieldValue.serverTimestamp(),
     updatedOn: FieldValue.serverTimestamp(),
     provider: (decodedToken as DecodedIdToken).firebase.sign_in_provider,
