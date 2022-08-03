@@ -1,16 +1,10 @@
-import { admin } from '../config/firebase';
 import { Request, Response, NextFunction } from 'express';
-import { $genericErrorHandler } from './error-handler';
+import { $genericErrorHandler } from '../error-handler';
+import { $appCheckTokenDecoded } from './firebase-app-check-token';
 
 let $appCheckVerification = async function (req: Request, res: Response, next: NextFunction) {
-  const appCheckToken = req.header('X-Firebase-AppCheck');
-
-  if (!appCheckToken) {
-    return next(await $genericErrorHandler({ code: 401, message: 'Unauthorized' }));
-  }
-
   try {
-    await admin.appCheck().verifyToken(appCheckToken);
+    await $appCheckTokenDecoded(req, next);
     return next();
   } catch (error: any) {
     console.log('App Check token error', error);

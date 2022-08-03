@@ -1,6 +1,6 @@
 import { NextFunction } from 'express';
 import { $firestormErrorHandler } from '../../utils/error-handler';
-import { $getDocumentId } from '../../utils/firestorm-helpers';
+import { $getDocumentId } from '../../utils/firebase/firebase-firestorm-helpers';
 import { _getCreateOrganizationPayload } from './helpers/payload-builder';
 import { db } from '../../config/firebase';
 import { IUpdateObject } from '../../types/general/services';
