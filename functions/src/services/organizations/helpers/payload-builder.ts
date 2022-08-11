@@ -5,7 +5,9 @@ let _getCreateOrganizationPayload = async (reqBody: Request['body']) => {
   const { email, uid } = reqBody;
   return {
     email,
-    owner: uid,
+    roles: {
+      [uid]: 'admin', // Since this is create and can only be done by admin the user will be added as admin
+    },
     enabled: true,
     createdOn: FieldValue.serverTimestamp(),
     updatedOn: FieldValue.serverTimestamp(),

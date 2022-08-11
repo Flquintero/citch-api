@@ -9,7 +9,6 @@ let _getCreateUserPayload = async (req: Request) => {
     lastName,
     emailVerified,
     fullName,
-    type: 'OWNER',
     enabled: true,
     provider,
     createdOn: FieldValue.serverTimestamp(),
