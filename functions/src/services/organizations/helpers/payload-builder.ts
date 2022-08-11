@@ -1,11 +1,14 @@
-let _getCreateOrganizationPayload = async (requestBody: any) => {
-  const { email, fullName, userDocReference } = requestBody;
+import { FieldValue } from '../../../config/firebase';
+import { Request } from 'express';
+
+let _getCreateOrganizationPayload = async (reqBody: Request['body']) => {
+  const { email, uid } = reqBody;
   return {
     email,
-    fullName: fullName,
-    owner: userDocReference,
-    type: 'OWNER',
-    enabled: 'false',
+    owner: uid,
+    enabled: true,
+    createdOn: FieldValue.serverTimestamp(),
+    updatedOn: FieldValue.serverTimestamp(),
   };
 };
 

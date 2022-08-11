@@ -1,11 +1,13 @@
-import { db } from '../../config/firebase';
+// helpers
 import { $axiosErrorHandler, $firestormErrorHandler } from '../../utils/error-handler';
-import { $getDocumentId } from '../../utils/firebase/firebase-firestorm-helpers';
-import { $idTokenDecoded } from '../../utils/firebase/firebase-user-token';
+import { $getDocumentId } from '../../utils/firebase/firestorm/firebase-firestorm-helpers';
 import { _getCreateUserPayload } from './helpers/payload-builder';
+// types
 import { IUpdateObject } from '../../types/general/services';
 import { Request, NextFunction } from 'express';
-
+// declarations
+import { db } from '../../config/firebase';
+// USING NODE.JS FIREBASE ADMIN SDK SO ADDING TO COLLECTIONS WOULD BE WITH WEB VERSION 8 EXAMPLES IN FIREBASE PAGE
 const USERS_DB = db.collection('users');
 
 export default {
@@ -26,9 +28,9 @@ export default {
 
   create: async function (req: Request, next: NextFunction) {
     try {
-      const decodedToken = await $idTokenDecoded(req, next);
-      let user = await USERS_DB.add(await _getCreateUserPayload(req, decodedToken));
-      return user.path;
+      // uid comes from id token middlewarw
+      let user = await USERS_DB.doc(req.body.uid).set(await _getCreateUserPayload(req));
+      return user;
     } catch (error: any) {
       console.log('CREATE USERS ERROR', await $axiosErrorHandler(error));
       return next(await $axiosErrorHandler(error));

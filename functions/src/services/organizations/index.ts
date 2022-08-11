@@ -1,14 +1,15 @@
-import { NextFunction } from 'express';
+// helpers
 import { $firestormErrorHandler } from '../../utils/error-handler';
-import { $getDocumentId } from '../../utils/firebase/firebase-firestorm-helpers';
+import { $getDocumentId } from '../../utils/firebase/firestorm/firebase-firestorm-helpers';
 import { _getCreateOrganizationPayload } from './helpers/payload-builder';
-import { db } from '../../config/firebase';
+// types
+import { NextFunction } from 'express';
 import { IUpdateObject } from '../../types/general/services';
 import { ICreateOrganization } from '../../types/services/organizations';
-
+// declarations
+import { db } from '../../config/firebase';
 const ORGANIZATIONS_DB = db.collection('organizations');
 
-// Type
 export default {
   create: async function (options: ICreateOrganization, next: NextFunction) {
     try {

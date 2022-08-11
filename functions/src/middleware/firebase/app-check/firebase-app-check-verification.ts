@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { $genericErrorHandler } from '../error-handler';
-import { $appCheckTokenDecoded } from './firebase-app-check-token';
+import { $genericErrorHandler } from '../../../utils/error-handler';
+import { $appCheckTokenDecoded } from '../../../utils/firebase/app-check/firebase-app-check-token';
 
 let $appCheckVerification = async function (req: Request, res: Response, next: NextFunction) {
   try {

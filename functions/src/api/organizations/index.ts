@@ -1,8 +1,11 @@
-import { Request, Response, NextFunction, Router } from 'express';
+// middleware
+import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
+import { $idTokenVerification } from '../../middleware/firebase/user-token/firebase-user-token-verification';
+// services
 import organizationsService from '../../services/organizations';
-import { $appCheckVerification } from '../../utils/firebase/firebase-app-check-verification';
-import { $idTokenVerification } from '../../utils/firebase/firebase-user-token-verification';
-
+// type
+import { Request, Response, NextFunction, Router } from 'express';
+// declarations
 const organizationsRouter = Router();
 
 organizationsRouter.post(

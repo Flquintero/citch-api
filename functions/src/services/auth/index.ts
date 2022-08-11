@@ -1,10 +1,10 @@
-import { NextFunction } from 'express';
+// helpers
 import { $apiRequest } from '../../utils/https-call';
 import { $axiosErrorHandler } from '../../utils/error-handler';
-
-// Type
+// types
+import { NextFunction } from 'express';
 import { IVerifyPassword, IConfirmPasswordReset } from '../../types/services/auth';
-
+// declarations
 const IDENTITY_TOOLKIT_URL = 'https://identitytoolkit.googleapis.com';
 const IDENTITY_TOOLKIT_VERSION = '/v1';
 

@@ -1,7 +1,10 @@
-import { Request, Response, NextFunction, Router } from 'express';
+// middleware
+import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
+// services
 import authService from '../../services/auth';
-import { $appCheckVerification } from '../../utils/firebase/firebase-app-check-verification';
-
+// types
+import { Request, Response, NextFunction, Router } from 'express';
+// declarations
 const authRouter = Router();
 
 authRouter.post(

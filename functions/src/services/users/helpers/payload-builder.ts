@@ -1,16 +1,19 @@
-import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 import { Request } from 'express';
 import { FieldValue } from '../../../config/firebase';
 
-let _getCreateUserPayload = async (req: Request, decodedToken: DecodedIdToken | void) => {
+let _getCreateUserPayload = async (req: Request) => {
+  const { email, firstName, lastName, emailVerified, fullName, provider } = req['body'];
   return {
-    ...req['body'],
+    email,
+    firstName,
+    lastName,
+    emailVerified,
+    fullName,
     type: 'OWNER',
-    enabled: 'true',
+    enabled: true,
+    provider,
     createdOn: FieldValue.serverTimestamp(),
     updatedOn: FieldValue.serverTimestamp(),
-    provider: (decodedToken as DecodedIdToken).firebase.sign_in_provider,
-    uid: (decodedToken as DecodedIdToken).uid,
   };
 };
 

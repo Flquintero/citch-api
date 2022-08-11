@@ -1,6 +1,6 @@
-import { admin } from '../../config/firebase';
+import { admin } from '../../../config/firebase';
 import { Request, NextFunction } from 'express';
-import { $genericErrorHandler } from '../error-handler';
+import { $genericErrorHandler } from '../../error-handler';
 
 let $appCheckTokenDecoded = async function (req: Request, next: NextFunction) {
   try {
