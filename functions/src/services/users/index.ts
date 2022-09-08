@@ -1,14 +1,14 @@
-import { NextFunction } from 'express';
-import { $firestormErrorHandler } from '../../utils/error-handler';
-import { $getDocumentId } from '../../utils/firestorm-helpers';
+// helpers
+import { $axiosErrorHandler, $firestormErrorHandler } from '../../utils/error-handler';
+import { $getDocumentId } from '../../utils/firebase/firestorm/firebase-firestorm-helpers';
 import { _getCreateUserPayload } from './helpers/payload-builder';
-import { db } from '../../config/firebase';
+// types
 import { IUpdateObject } from '../../types/general/services';
-import { ICreateUserPayload } from '../../types/services/users';
-
+import { Request, NextFunction } from 'express';
+// declarations
+import { db } from '../../config/firebase';
+// USING NODE.JS FIREBASE ADMIN SDK SO ADDING TO COLLECTIONS WOULD BE WITH WEB VERSION 8 EXAMPLES IN FIREBASE PAGE
 const USERS_DB = db.collection('users');
-
-// Type
 
 export default {
   //NOT USED HERE AS EXAMPLE TO SHOW WE NEED TO DO A FOREACH
@@ -26,13 +26,14 @@ export default {
   //   }
   // },
 
-  create: async function (options: ICreateUserPayload, next: NextFunction) {
+  create: async function (req: Request, next: NextFunction) {
     try {
-      let user = await USERS_DB.add(await _getCreateUserPayload(options));
-      return user.path;
+      // uid comes from id token middlewarw
+      let user = await USERS_DB.doc(req.body.uid).set(await _getCreateUserPayload(req));
+      return user;
     } catch (error: any) {
-      console.log('CREATE USERS ERROR', error);
-      return next(await $firestormErrorHandler(error));
+      console.log('CREATE USERS ERROR', await $axiosErrorHandler(error));
+      return next(await $axiosErrorHandler(error));
     }
   },
   // Brings the pathId as {{collections}}/{{id}} and an updateData object with what needs to be updated

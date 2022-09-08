@@ -1,8 +1,18 @@
-let _getCreateUserPayload = async (requestBody: Request['body']) => {
+import { Request } from 'express';
+import { FieldValue } from '../../../config/firebase';
+
+let _getCreateUserPayload = async (req: Request) => {
+  const { email, firstName, lastName, emailVerified, fullName, provider } = req['body'];
   return {
-    ...requestBody,
-    type: 'OWNER',
-    enabled: 'false',
+    email,
+    firstName,
+    lastName,
+    emailVerified,
+    fullName,
+    enabled: true,
+    provider,
+    createdOn: FieldValue.serverTimestamp(),
+    updatedOn: FieldValue.serverTimestamp(),
   };
 };
 

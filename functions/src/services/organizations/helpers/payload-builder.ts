@@ -1,11 +1,16 @@
-let _getCreateOrganizationPayload = async (requestBody: any) => {
-  const { email, fullName, userDocReference } = requestBody;
+import { FieldValue } from '../../../config/firebase';
+import { Request } from 'express';
+
+let _getCreateOrganizationPayload = async (reqBody: Request['body']) => {
+  const { email, uid } = reqBody;
   return {
     email,
-    fullName: fullName,
-    owner: userDocReference,
-    type: 'OWNER',
-    enabled: 'false',
+    roles: {
+      [uid]: 'admin', // Since this is create and can only be done by admin the user will be added as admin
+    },
+    enabled: true,
+    createdOn: FieldValue.serverTimestamp(),
+    updatedOn: FieldValue.serverTimestamp(),
   };
 };
 

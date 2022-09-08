@@ -1,31 +1,40 @@
-import { Request, Response, NextFunction, Router } from 'express';
+// middleware
+import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
+import { $idTokenVerification } from '../../middleware/firebase/user-token/firebase-user-token-verification';
+// helpers
+import { $toDocReference } from '../../utils/firebase/firestorm/firebase-firestorm-helpers';
+// services
 import usersService from '../../services/users';
 import organizationsService from '../../services/organizations';
-import { $toDocReference } from '../../utils/firestorm-helpers';
+// types
+import { Request, Response, NextFunction, Router } from 'express';
+// declarations
 const usersRouter = Router();
+const COLLECTION = 'users';
 
 // /signup is to register an Owner of account. We will have a /add to add a teammate/client/user to account
 
-usersRouter.post('/signup', async (req: Request, res: Response, next: NextFunction) => {
-  // creates user from authed user
-  let userPathId = await usersService.create(req.body, next);
-  // creates an org where the owner is the passed user
-  req.body.userDocReference = await $toDocReference(userPathId as string);
-  let organizationPathId = await organizationsService.create(req.body, next);
-  // updates user with the created or reference
-  res.json(
-    await usersService.update(
-      {
-        pathId: userPathId as string,
-        updateData: { organization: await $toDocReference(organizationPathId as string) },
-      },
-      next
-    )
-  );
-});
+usersRouter.post(
+  '/signup',
+  [$appCheckVerification, $idTokenVerification],
+  async (req: Request, res: Response, next: NextFunction) => {
+    await usersService.create(req, next);
+    let organizationPathId = await organizationsService.create(req.body, next);
+    //updates user with the created org reference
+    res.json(
+      await usersService.update(
+        {
+          pathId: `${COLLECTION}/${req.body.uid}`,
+          updateData: { organization: await $toDocReference(organizationPathId as string) },
+        },
+        next
+      )
+    );
+  }
+);
 
 usersRouter.get('*', async (req: Request, res: Response) => {
-  res.status(404).send('This route does not exist.');
+  res.status(404).send('Cannot find route');
 });
 
 module.exports = usersRouter;

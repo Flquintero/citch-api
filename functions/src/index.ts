@@ -12,7 +12,15 @@ app.disable('x-powered-by');
 import { IError } from './types/general/errors';
 
 import * as cors from 'cors';
-const allowedOrigins = ['http://localhost:3000', 'http://localhost:8080', 'https://www.citch.io'];
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:8080',
+  'https://www.citch.io',
+  'https://dashboard.citch.io',
+  'https://dashboard-dev.citch.io',
+  'https://dashboard-new.citch.io',
+  'https://dashboard-new-dev.citch.io',
+];
 const options: cors.CorsOptions = {
   origin: allowedOrigins,
 };
@@ -28,7 +36,7 @@ function errorHandler(
   res: express.Response,
   next: express.NextFunction
 ) {
-  console.log('err', err.message);
+  console.log('err', err);
   // need status to get error correctly in front end
   // need to structure errors before sending here One for generic and one for each platform
   res.status(err.code).json(err);

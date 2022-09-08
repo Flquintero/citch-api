@@ -1,9 +1,9 @@
-export interface ICreateUserPayload extends ReadableStream<Uint8Array> {
+export interface ICreateUserPayload {
   email: string;
   firstName: string;
   lastName: string;
   emailVerified: boolean;
   fullName: string;
+  provider: string;
   uid: string;
-  providerId: string;
 }
