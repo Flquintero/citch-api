@@ -3,7 +3,8 @@ import * as functions from 'firebase-functions';
 const secrets = functions.config().doppler;
 
 // Uncomment below to test if secrets are being updated - can check in the google cloud console for the project and see the logs not the variables
-//console.log('secrets', secrets);
+// THESE NEEDS TO BE COMMENTED
+// console.log('secrets', secrets);
 
 admin.initializeApp({
   credential: admin.credential.cert({
