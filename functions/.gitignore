@@ -11,3 +11,6 @@ node_modules/
 # dotenv environment variables file
 .env
 .env.*
+
+# firebase runtime config - this has local vars injected for local testing
+.runtimeconfig.json

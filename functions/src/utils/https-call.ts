@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ITokenHeaders } from '../types/general/services';
+import { secrets } from '../config/firebase';
 
 export interface ApiRequestOptions extends AxiosRequestConfig {
   apiVersion?: string;
@@ -33,7 +34,7 @@ $firestormApiRequest = async function apiRequest(
 function getApiResponse(options: ApiRequestOptions) {
   const requestObj = {
     ...options,
-    baseURL: process.env.VUE_APP_BASE_API_URL,
+    baseURL: secrets.VUE_APP_BASE_API_URL, // change the env var when we use it
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json',
@@ -47,7 +48,7 @@ function getFirestormApiResponse(options: ApiRequestOptions, headers: ITokenHead
   const { idToken, appCheckToken } = headers;
   const requestObj = {
     ...options,
-    baseURL: `https://firestore.googleapis.com/v1/projects/${process.env.APP_FIREBASE_PROJECT_ID}/databases/(default)/documents`,
+    baseURL: `https://firestore.googleapis.com/v1/projects/${secrets.APP_FIREBASE_PROJECT_ID}/databases/(default)/documents`,
     headers: {
       'Authorization': `Bearer ${idToken}`,
       'X-Firebase-Token': `${appCheckToken}`,
