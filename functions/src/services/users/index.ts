@@ -3,7 +3,7 @@ import { $axiosErrorHandler, $firestormErrorHandler } from '../../utils/error-ha
 import { $getDocumentId } from '../../utils/firebase/firestorm/firebase-firestorm-helpers';
 import { _getCreateUserPayload } from './helpers/payload-builder';
 // types
-import { IUpdateObject } from '../../types/general/services';
+import { IUpdateObject, IReadObject } from '../../types/general/services';
 import { Request, NextFunction } from 'express';
 // declarations
 import { db } from '../../config/firebase';
@@ -45,6 +45,17 @@ export default {
       });
     } catch (error: any) {
       console.log('UPDATE USERS ERROR', error);
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  // Brings the pathId as {{collections}}/{{id}} and an updateData object with what needs to be updated
+  read: async function (options: IReadObject, next: NextFunction) {
+    try {
+      const { id } = options;
+      const user = await USERS_DB.doc(id).get();
+      return user.data();
+    } catch (error: any) {
+      console.log('Read USERS ERROR', error);
       return next(await $firestormErrorHandler(error));
     }
   },

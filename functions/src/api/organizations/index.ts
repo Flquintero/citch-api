@@ -1,6 +1,7 @@
 // middleware
 import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
 import { $idTokenVerification } from '../../middleware/firebase/user-token/firebase-user-token-verification';
+import { $getUserOrganizationId } from '../../middleware/organizations/fetch-user-organization';
 // services
 import organizationsService from '../../services/organizations';
 // type
@@ -10,7 +11,7 @@ const organizationsRouter = Router();
 
 organizationsRouter.post(
   '/update',
-  [$appCheckVerification, $idTokenVerification],
+  [$appCheckVerification, $idTokenVerification, $getUserOrganizationId],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await organizationsService.update(req.body, next));
   }
