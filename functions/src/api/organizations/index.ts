@@ -13,7 +13,11 @@ organizationsRouter.post(
   '/update',
   [$appCheckVerification, $idTokenVerification, $getUserOrganizationId],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await organizationsService.update(req.body, next));
+    const updateObject = {
+      pathId: `organizations/${req.body.organizationId}`,
+      updateData: req.body.updateData,
+    };
+    res.json(await organizationsService.update(updateObject, next));
   }
 );
 

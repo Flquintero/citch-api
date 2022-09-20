@@ -1,6 +1,8 @@
 import { DocumentData, Timestamp } from 'firebase-admin/firestore';
 
-export enum OrganizationRoles {}
+export enum OrganizationRoles {
+  'admin',
+}
 
 export interface ICreateOrganization extends ReadableStream<Uint8Array> {
   email: string;
@@ -19,6 +21,6 @@ export interface IOrganization extends DocumentData {
   email: string;
   enabled: boolean;
   roles: {
-    [uid: string]: string; // add an enum possibilities maybe?
+    [uid: string]: OrganizationRoles; // add an enum possibilities maybe?
   };
 }
