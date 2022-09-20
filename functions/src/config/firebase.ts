@@ -8,7 +8,7 @@ const secrets = functions.config().doppler;
 
 admin.initializeApp({
   credential: admin.credential.cert({
-    privateKey: secrets.APP_FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    privateKey: secrets.APP_FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     projectId: secrets.APP_FIREBASE_PROJECT_ID,
     clientEmail: secrets.APP_FIREBASE_CLIENT_EMAIL,
   }),
