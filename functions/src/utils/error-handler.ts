@@ -9,7 +9,10 @@ let $firestormErrorHandler = async (error: any) => {
     };
   return error;
 };
+let $facebookErrorHandler = async (error: { [property: string]: string | number }) => {
+  return { ...error };
+};
 let $genericErrorHandler = async (error: { [property: string]: string | number }) => {
   return { ...error };
 };
-export { $axiosErrorHandler, $firestormErrorHandler, $genericErrorHandler };
+export { $axiosErrorHandler, $firestormErrorHandler, $genericErrorHandler, $facebookErrorHandler };
