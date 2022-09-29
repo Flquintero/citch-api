@@ -7,7 +7,6 @@ import facebookService from '../../services/facebook';
 import organizationService from '../../services/organizations';
 // type
 import { Request, Response, NextFunction, Router } from 'express';
-import { IFacebookConnectData } from '../../types/services/facebook';
 // declarations
 const facebookRouter = Router();
 
@@ -23,10 +22,7 @@ facebookRouter.post(
   '/save-user',
   [$appCheckVerification, $idTokenVerification, $getUserOrganizationId],
   async (req: Request, res: Response, next: NextFunction) => {
-    const facebookUserData = await facebookService.getUserData(
-      req.body.facebookConnectData as IFacebookConnectData,
-      next
-    );
+    const facebookUserData = await facebookService.getUserData(req.body.code, next);
     const updateObject = {
       pathId: `organizations/${req.body.organizationId}`,
       updateData: { ...facebookUserData },

@@ -1,5 +1,5 @@
 import { $apiRequest } from '../../../utils/https-call';
-import { $axiosErrorHandler } from '../../../utils/error-handler';
+import { $facebookErrorHandler } from '../../../utils/error-handler';
 import { NextFunction } from 'express';
 
 // 3rd party
@@ -15,12 +15,12 @@ export async function _authUserData(code: string, next: NextFunction) {
       code,
       redirect_uri: `${process.env.REDIRECT_URI}/facebook`,
     });
-    const userAuthData = await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
+    return await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
     });
-    return userAuthData.data;
   } catch (error: any) {
-    next(await $axiosErrorHandler(error));
+    console.log('Error Facebook Auth User Data', error);
+    return next(await $facebookErrorHandler(error));
   }
 }
 export async function _appAccessToken(next: NextFunction) {
@@ -30,12 +30,11 @@ export async function _appAccessToken(next: NextFunction) {
       client_secret: process.env.FACEBOOK_APP_SECRET,
       grant_type: 'client_credentials',
     });
-    const appTokenData = await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
+    return await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
     });
-    return appTokenData.data;
   } catch (error: any) {
-    next(await $axiosErrorHandler(error));
+    return next(await $facebookErrorHandler(error));
   }
 }
 export async function _longLivedUserAccessToken(userAccessToken: string, next: NextFunction) {
@@ -46,12 +45,11 @@ export async function _longLivedUserAccessToken(userAccessToken: string, next: N
       grant_type: 'fb_exchange_token',
       fb_exchange_token: userAccessToken,
     });
-    const longLivedUserTokenData = await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
+    return await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
     });
-    return longLivedUserTokenData.data;
   } catch (error: any) {
-    next(await $axiosErrorHandler(error));
+    return next(await $facebookErrorHandler(error));
   }
 }
 export async function _userAccessToken(
@@ -65,10 +63,10 @@ export async function _userAccessToken(
       access_token: appAccessToken,
     });
     const userAccessTokenData = await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}${process.env.FACEBOOK_API_VERSION}/debug_token?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/debug_token?${stringifiedParams}`,
     });
-    return userAccessTokenData.data.data; // yes it has 2 data objects;
+    return userAccessTokenData.data; // yes it has 2 data objects;
   } catch (error: any) {
-    next(await $axiosErrorHandler(error));
+    return next(await $facebookErrorHandler(error));
   }
 }

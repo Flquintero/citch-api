@@ -1,7 +1,6 @@
 // helpers
 import { $facebookErrorHandler } from '../../utils/error-handler';
 import { getRandomHash } from '../../utils/auth-state-hash-creator';
-import { $axiosErrorHandler } from '../../utils/error-handler';
 import {
   _authUserData,
   _appAccessToken,
@@ -12,7 +11,6 @@ import {
 import { stringify } from 'query-string';
 // types
 import { NextFunction, Request } from 'express';
-import { IFacebookConnectData } from '../../types/services/facebook';
 
 // Declarations
 
@@ -40,16 +38,19 @@ export default {
         auth_type: 'rerequest',
         state,
       });
-      return `${FACEBOOK_URL}/${process.env.FACEBOOK_API_VERSION}/dialog/oauth?${stringifiedParams}`;
+      return {
+        url: `${FACEBOOK_URL}/${process.env.FACEBOOK_API_VERSION}/dialog/oauth?${stringifiedParams}`,
+        state,
+      };
     } catch (error: any) {
       return next(await $facebookErrorHandler(error));
     }
   },
-  getUserData: async function (options: IFacebookConnectData, next: NextFunction) {
-    if (options.code) {
+  getUserData: async function (code: string, next: NextFunction) {
+    if (code) {
       try {
         // user data that facebook returns with a short lived token
-        const userAuthData = await _authUserData(options.code, next);
+        const userAuthData = await _authUserData(code, next);
         // app access token - available in the app dashboard but need to get it dinamically in case it is expired
         const appAccessTokenData = await _appAccessToken(next);
         // exchange shortlived token for a long lived one for user
@@ -64,16 +65,17 @@ export default {
           next
         );
         // to be saved in organizations collections in DB
-        const facebookData = {
-          access_token: longLivedAccessTokenData.access_token,
-          token_type: longLivedAccessTokenData.token_type,
-          expires_in: longLivedAccessTokenData.expires_in,
-          user_id: userAccessTokenData.user_id,
-          app_id: userAccessTokenData.app_id,
+        return {
+          facebookData: {
+            access_token: longLivedAccessTokenData.access_token,
+            token_type: longLivedAccessTokenData.token_type,
+            expires_in: longLivedAccessTokenData.expires_in,
+            user_id: userAccessTokenData.user_id,
+            app_id: userAccessTokenData.app_id,
+          },
         };
-        return facebookData;
       } catch (error: any) {
-        return next(await $axiosErrorHandler(error));
+        return next(error);
       }
     } else {
       return new Error('Error Connecting to Platform');
