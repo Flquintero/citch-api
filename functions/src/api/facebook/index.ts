@@ -28,7 +28,7 @@ facebookRouter.post(
       updateData: { ...facebookUserData },
     };
     await organizationService.update(updateObject, next);
-    res.status(200);
+    res.status(200).send('OK');
   }
 );
 
