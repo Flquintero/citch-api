@@ -1,7 +1,7 @@
 // middleware
 import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
 import { $idTokenVerification } from '../../middleware/firebase/user-token/firebase-user-token-verification';
-import { $getUserOrganizationId } from '../../middleware/organizations/fetch-user-organization';
+import { $getUserOrganization } from '../../middleware/organizations/fetch-user-organization';
 // services
 import facebookService from '../../services/facebook';
 import organizationService from '../../services/organizations';
@@ -11,8 +11,16 @@ import { Request, Response, NextFunction, Router } from 'express';
 const facebookRouter = Router();
 
 facebookRouter.get(
+  '/check-user-credentials',
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.checkUserToken(req.body.organization, next));
+  }
+);
+
+facebookRouter.get(
   '/consent-url',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganizationId],
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await facebookService.getFacebookConsentUrl(req, next));
   }
@@ -20,12 +28,25 @@ facebookRouter.get(
 
 facebookRouter.post(
   '/save-user',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganizationId],
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     const facebookUserData = await facebookService.getUserData(req.body.code, next);
     const updateObject = {
       pathId: `organizations/${req.body.organizationId}`,
       updateData: { ...facebookUserData },
+    };
+    await organizationService.update(updateObject, next);
+    res.status(200).send('OK');
+  }
+);
+
+facebookRouter.put(
+  '/disconnect-user',
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    const updateObject = {
+      pathId: `organizations/${req.body.organizationId}`,
+      updateData: { facebookUserData: null },
     };
     await organizationService.update(updateObject, next);
     res.status(200).send('OK');

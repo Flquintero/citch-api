@@ -11,6 +11,7 @@ import {
 import { stringify } from 'query-string';
 // types
 import { NextFunction, Request } from 'express';
+import { IOrganization } from '../../types/services/organizations';
 
 // Declarations
 
@@ -79,6 +80,16 @@ export default {
       }
     } else {
       return new Error('Error Connecting to Platform');
+    }
+  },
+  checkUserToken: async function (organization: IOrganization, next: NextFunction) {
+    try {
+      if (!organization.facebookData || organization.facebookData === null) {
+        return { valid: false };
+      } else {
+      }
+    } catch (error: any) {
+      return next(error);
     }
   },
 };
