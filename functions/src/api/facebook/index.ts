@@ -46,7 +46,7 @@ facebookRouter.put(
   async (req: Request, res: Response, next: NextFunction) => {
     const updateObject = {
       pathId: `organizations/${req.body.organizationId}`,
-      updateData: { facebookUserData: null },
+      updateData: { facebookData: null },
     };
     await organizationService.update(updateObject, next);
     res.status(200).send('OK');

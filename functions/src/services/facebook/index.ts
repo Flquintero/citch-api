@@ -87,6 +87,7 @@ export default {
       if (!organization.facebookData || organization.facebookData === null) {
         return { valid: false };
       } else {
+        return { valid: true };
       }
     } catch (error: any) {
       return next(error);
