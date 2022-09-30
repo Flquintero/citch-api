@@ -7,6 +7,8 @@ import {
   _longLivedUserAccessToken,
   _userAccessToken,
 } from './helpers/user-auth-handler';
+// services
+import organizationsService from '../../services/organizations';
 // 3rd party
 import { stringify } from 'query-string';
 // types
@@ -70,7 +72,7 @@ export default {
           facebookData: {
             access_token: longLivedAccessTokenData.access_token,
             token_type: longLivedAccessTokenData.token_type,
-            expires_in: longLivedAccessTokenData.expires_in,
+            expires_in: userAccessTokenData.expires_in,
             user_id: userAccessTokenData.user_id,
             app_id: userAccessTokenData.app_id,
           },
@@ -83,11 +85,29 @@ export default {
     }
   },
   checkUserToken: async function (organization: IOrganization, next: NextFunction) {
+    // FACEBOOOK doesnt have refresh tokens, if you use the api it refreshes for you so if it expires we need a new one
     try {
+      console.log('organizationID', organization);
       if (!organization.facebookData || organization.facebookData === null) {
         return { valid: false };
       } else {
-        return { valid: true };
+        const appAccessTokenData = await _appAccessToken(next);
+        const userAccessTokenData = await _userAccessToken(
+          organization.facebookData.access_token,
+          appAccessTokenData.access_token,
+          next
+        );
+        if (userAccessTokenData.is_valid) {
+          return { valid: true };
+          // maybe the below should be decoupled but i feel its part of the functionality that if its invalid cut the bs and make them reconnect
+        } else {
+          const updateObject = {
+            pathId: `organizations/${organization.id}`,
+            updateData: { facebookData: null },
+          };
+          await organizationsService.update(updateObject, next);
+          return { valid: false, message: 'Token has expired. Please Reconnect Again' };
+        }
       }
     } catch (error: any) {
       return next(error);
