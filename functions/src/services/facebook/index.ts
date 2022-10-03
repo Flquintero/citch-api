@@ -13,7 +13,7 @@ import organizationsService from '../../services/organizations';
 import { stringify } from 'query-string';
 // types
 import { NextFunction, Request } from 'express';
-import { IOrganization } from '../../types/services/organizations';
+import { FacebookConnectionStatus } from '../../types/services/facebook';
 
 // Declarations
 
@@ -72,7 +72,8 @@ export default {
           facebookData: {
             access_token: longLivedAccessTokenData.access_token,
             token_type: longLivedAccessTokenData.token_type,
-            expires_in: userAccessTokenData.expires_in,
+            data_access_expires_at: userAccessTokenData.data_access_expires_at,
+            expires_at: userAccessTokenData.expires_at,
             user_id: userAccessTokenData.user_id,
             app_id: userAccessTokenData.app_id,
           },
@@ -84,12 +85,12 @@ export default {
       return new Error('Error Connecting to Platform');
     }
   },
-  checkUserToken: async function (organization: IOrganization, next: NextFunction) {
+  checkUserToken: async function (req: Request, next: NextFunction) {
     // FACEBOOOK doesnt have refresh tokens, if you use the api it refreshes for you so if it expires we need a new one
     try {
-      console.log('organizationID', organization);
+      const { organizationId, organization } = req.body;
       if (!organization.facebookData || organization.facebookData === null) {
-        return { valid: false };
+        return { status: FacebookConnectionStatus.disconnected };
       } else {
         const appAccessTokenData = await _appAccessToken(next);
         const userAccessTokenData = await _userAccessToken(
@@ -98,15 +99,18 @@ export default {
           next
         );
         if (userAccessTokenData.is_valid) {
-          return { valid: true };
+          return { status: FacebookConnectionStatus.connected };
           // maybe the below should be decoupled but i feel its part of the functionality that if its invalid cut the bs and make them reconnect
         } else {
           const updateObject = {
-            pathId: `organizations/${organization.id}`,
+            pathId: `organizations/${organizationId}`,
             updateData: { facebookData: null },
           };
           await organizationsService.update(updateObject, next);
-          return { valid: false, message: 'Token has expired. Please Reconnect Again' };
+          return {
+            status: FacebookConnectionStatus.expired,
+            message: 'Token has expired. Please Reconnect Again',
+          };
         }
       }
     } catch (error: any) {

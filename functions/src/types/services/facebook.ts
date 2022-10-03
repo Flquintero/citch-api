@@ -5,3 +5,9 @@ export interface IFacebookTokenData {
   user_id: string;
   app_id: string;
 }
+
+export enum FacebookConnectionStatus {
+  disconnected, // 0
+  connected, // 1
+  expired, // 2
+}

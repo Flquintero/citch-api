@@ -14,7 +14,7 @@ facebookRouter.get(
   '/check-user-credentials',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.checkUserToken(req.body.organization, next));
+    res.json(await facebookService.checkUserToken(req, next));
   }
 );
 
