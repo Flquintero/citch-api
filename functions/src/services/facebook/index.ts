@@ -6,7 +6,9 @@ import {
   _appAccessToken,
   _longLivedUserAccessToken,
   _userAccessToken,
-} from './helpers/user-auth-handler';
+} from './helpers/facebook-user-auth-handler';
+import { _getFacebookPost } from './helpers/facebook-post-requests';
+import { _getFacebookPage } from './helpers/facebook-page-requests';
 // services
 import organizationsService from '../../services/organizations';
 // 3rd party
@@ -14,10 +16,8 @@ import { stringify } from 'query-string';
 // types
 import { NextFunction, Request } from 'express';
 import { FacebookConnectionStatus } from '../../types/services/facebook';
-
-// Declarations
-
-const FACEBOOK_URL = 'https://www.facebook.com';
+// constants
+import { FACEBOOK_URL } from './helpers/facebook-url-constants';
 
 export default {
   getFacebookConsentUrl: async function (options: Request, next: NextFunction) {
@@ -115,6 +115,24 @@ export default {
       }
     } catch (error: any) {
       return next(error);
+    }
+  },
+  getPostPage: async function (req: Request, next: NextFunction) {
+    try {
+      const { postId } = req.params;
+      const { access_token } = req.body.organization.facebookData;
+      const postData = await _getFacebookPost({ postId, access_token, fields: `from` }, next);
+      return await _getFacebookPage(
+        {
+          pageId: postData.from.id,
+          access_token,
+          fields: `id,name,picture`,
+        },
+        next
+      );
+    } catch (error: any) {
+      console.log('Error Facebook Post Page', error);
+      return next(await $facebookErrorHandler(error));
     }
   },
 };

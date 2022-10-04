@@ -53,6 +53,14 @@ facebookRouter.put(
   }
 );
 
+facebookRouter.get(
+  `/post-page/:postId`,
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.getPostPage(req, next));
+  }
+);
+
 facebookRouter.get('*', async (req: Request, res: Response) => {
   res.status(404).send('This route does not exist.');
 });

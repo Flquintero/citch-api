@@ -4,8 +4,8 @@ import { NextFunction } from 'express';
 
 // 3rd party
 import { stringify } from 'query-string';
-
-const FACEBOOK_GRAPH_URL = 'https://graph.facebook.com';
+//constants
+import { FACEBOOK_GRAPH_URL } from './facebook-url-constants';
 
 export async function _authUserData(code: string, next: NextFunction) {
   try {
