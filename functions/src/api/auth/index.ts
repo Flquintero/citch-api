@@ -25,7 +25,7 @@ authRouter.post(
   }
 );
 
-authRouter.get('*', async (req: Request, res: Response) => {
+authRouter.get('*', async (res: Response) => {
   res.status(404).send('This route does not exist.');
 });
 

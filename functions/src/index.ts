@@ -15,6 +15,7 @@ import * as cors from 'cors';
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:8080',
+  'https://localhost:8080',
   'https://www.citch.io',
   'https://dashboard.citch.io',
   'https://dashboard-dev.citch.io',
