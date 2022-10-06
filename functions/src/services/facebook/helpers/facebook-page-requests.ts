@@ -41,7 +41,7 @@ export async function _getFacebookPage(
 }
 // If connected to our Business Manager
 export async function _checkPageLinkedToAppBusinessManager(
-  options: { pageId: string; page_access_token: string; pageLimit: number },
+  options: { pageId: string; page_access_token: string },
   next: NextFunction
 ): Promise<IFacebookPageLinkedStatus | void> {
   try {
@@ -79,6 +79,110 @@ export async function _getLinkedPagesToAppBusinessManager(
     });
   } catch (error: any) {
     console.log('Error Get Linked Pages to Business Manager', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+export async function _connectUserPageToAppBusinessManager(
+  options: {
+    user_access_token: string;
+    pageId: string;
+  },
+  next: NextFunction
+) {
+  try {
+    const { user_access_token, pageId } = options;
+    const stringifiedParams = await $stringifyParams({
+      access_token: user_access_token,
+    });
+    return await $apiRequest({
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
+      data: {
+        page_id: pageId,
+        permitted_tasks: ['MANAGE'],
+      },
+    });
+  } catch (error: any) {
+    console.log('Error Linking Page to Business Manager', error);
+    return next(await $facebookErrorHandler(error));
+  } finally {
+  }
+}
+export async function _connectSystemUserToUserPage(
+  options: {
+    pageId: string;
+  },
+  next: NextFunction
+) {
+  try {
+    const { pageId } = options;
+    const stringifiedParams = await $stringifyParams({
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
+    });
+    return await $apiRequest({
+      method: 'post',
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,
+      data: {
+        tasks: ['MANAGE'],
+        user: FACEBOOK_SYSTEM_USER_ID,
+        business: FACEBOOK_BUSINESS_ID,
+      },
+    });
+  } catch (error: any) {
+    console.log('Facebook Error connecting System User to Page', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+export async function _checkSystemUserConnectedToUserPage(
+  options: {
+    pageId: string;
+  },
+  next: NextFunction
+) {
+  try {
+    const { pageId } = options;
+    const pageLimit = 15;
+    let assignedUserPages = await _getSystemUserAssignedFacebookPages({ pageLimit }, next);
+    const checkData: IFacebookPageCheckInListOfPagesData = {
+      pageId,
+      pages: assignedUserPages.data,
+      pagesTotalCount: assignedUserPages.summary.total_count,
+      pageLimit,
+      pagesNext: assignedUserPages.paging.next,
+      currentIndex: 0,
+    };
+    return await __checkForChosenPageinListOfPages(checkData);
+  } catch (error: any) {
+    console.log('Facebook Error connecting System User to Page', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+export async function _getSystemUserAssignedFacebookPages(
+  options: {
+    pageLimit: number;
+  },
+  next: NextFunction
+) {
+  try {
+    const { pageLimit } = options;
+    const stringifiedParams = await $stringifyParams({
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
+      limit: pageLimit,
+      summary: 'total_count',
+    });
+    return await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_SYSTEM_USER_ID}/assigned_pages?${stringifiedParams}`,
+      data: {
+        tasks: ['MANAGE'],
+        user: FACEBOOK_SYSTEM_USER_ID,
+        business: FACEBOOK_BUSINESS_ID,
+      },
+    });
+  } catch (error: any) {
+    console.log('Facebook Error connecting System User to Page', error);
     return next(await $facebookErrorHandler(error));
   }
 }

@@ -11,6 +11,9 @@ import { _getFacebookPost } from './helpers/facebook-post-requests';
 import {
   _getFacebookPage,
   _checkPageLinkedToAppBusinessManager,
+  _connectUserPageToAppBusinessManager,
+  _connectSystemUserToUserPage,
+  _checkSystemUserConnectedToUserPage,
 } from './helpers/facebook-page-requests';
 import { $stringifyParams } from '../../utils/stringify-params';
 // services
@@ -24,7 +27,7 @@ import {
   FacebookPageLinkedMessage,
 } from '../../types/services/facebook';
 // constants
-import { FACEBOOK_URL } from './helpers/facebook-constants';
+import { FACEBOOK_URL, FACEBOOK_APP_PAGE_ID } from './helpers/facebook-constants';
 
 export default {
   getFacebookConsentUrl: async function (options: Request, next: NextFunction) {
@@ -154,16 +157,29 @@ export default {
         },
         next
       );
+      // Allow Citch page through, it doesnt list it in options
+      if (pageId === FACEBOOK_APP_PAGE_ID) {
+        return FacebookPageLinkedMessage.already_linked;
+      }
       const pageConnectData = {
         pageId,
         page_access_token: (pageData as IFacebookPage).access_token as string,
-        pageLimit: 15,
       };
       const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
       if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
-        //
+        await _connectUserPageToAppBusinessManager(
+          { user_access_token: access_token, pageId },
+          next
+        );
+        //CONNECT SYSTEM USER TO PAGE BECAUSE IF WE NEED TO CONNECT TO BIZ MANAGER MEANS PAGE NOT CONNECTED
+        await _connectSystemUserToUserPage({ pageId }, next);
         return FacebookPageLinkedMessage.link_success;
       } else {
+        //CHECK TO SEE IF SYSTEM USER HAS PAGE IF NOT CONNECT IT (IT SHOULD BE BECAUSE OF THE ABOVE PROCESS)
+        const systemUserConnected = await _checkSystemUserConnectedToUserPage({ pageId }, next);
+        if (systemUserConnected?.status === FacebookPageLinkedStatus.not_linked) {
+          await _connectSystemUserToUserPage({ pageId }, next);
+        }
         return FacebookPageLinkedMessage.already_linked;
       }
     } catch (error: any) {
