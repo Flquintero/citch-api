@@ -25,7 +25,7 @@ import {
   IFacebookPage,
   FacebookPageLinkedStatus,
   FacebookPageLinkedMessage,
-} from '../../types/services/facebook';
+} from '../../types/modules/facebook';
 // constants
 import { FACEBOOK_URL, FACEBOOK_APP_PAGE_ID } from './helpers/facebook-constants';
 
@@ -166,11 +166,14 @@ export default {
         page_access_token: (pageData as IFacebookPage).access_token as string,
       };
       const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
+      console.log('pageLinkedObject', pageLinkedObject);
+      return;
       if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
         await _connectUserPageToAppBusinessManager(
           { user_access_token: access_token, pageId },
           next
         );
+
         //CONNECT SYSTEM USER TO PAGE BECAUSE IF WE NEED TO CONNECT TO BIZ MANAGER MEANS PAGE NOT CONNECTED
         await _connectSystemUserToUserPage({ pageId }, next);
         return FacebookPageLinkedMessage.link_success;
@@ -183,7 +186,7 @@ export default {
         return FacebookPageLinkedMessage.already_linked;
       }
     } catch (error: any) {
-      console.log('Error Facebook Post Page', error);
+      console.log('Error Facebook Linking Accounts', error);
       return next(await $facebookErrorHandler(error));
     }
   },

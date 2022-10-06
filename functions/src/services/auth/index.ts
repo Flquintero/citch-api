@@ -3,7 +3,7 @@ import { $apiRequest } from '../../utils/https-call';
 import { $axiosErrorHandler } from '../../utils/error-handler';
 // types
 import { NextFunction } from 'express';
-import { IVerifyPassword, IConfirmPasswordReset } from '../../types/services/auth';
+import { IVerifyPassword, IConfirmPasswordReset } from '../../types/modules/auth';
 // declarations
 const IDENTITY_TOOLKIT_URL = 'https://identitytoolkit.googleapis.com';
 const IDENTITY_TOOLKIT_VERSION = '/v1';

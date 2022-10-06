@@ -10,7 +10,7 @@ import {
   IFacebookPageCheckInListOfPagesData,
   IFacebookPageLinkedStatus,
   FacebookPageLinkedStatus,
-} from '../../../types/services/facebook';
+} from '../../../types/modules/facebook';
 
 //constants
 import {
@@ -48,7 +48,6 @@ export async function _checkPageLinkedToAppBusinessManager(
     const pageLimit = 15;
     const { pageId } = options;
     const linkedPages = await _getLinkedPagesToAppBusinessManager({ pageLimit }, next);
-    console.log('linkedPages', linkedPages);
     const checkData: IFacebookPageCheckInListOfPagesData = {
       pageId,
       pages: linkedPages.data,
@@ -57,7 +56,7 @@ export async function _checkPageLinkedToAppBusinessManager(
       pagesNext: linkedPages.paging.next,
       currentIndex: 0,
     };
-    return await __checkForChosenPageinListOfPages(checkData);
+    return await __checkForChosenPageinListOfPages(checkData, next);
   } catch (error: any) {
     console.log('Error Check Page Linked to Business Manager', error);
     return next(await $facebookErrorHandler(error));
@@ -154,7 +153,7 @@ export async function _checkSystemUserConnectedToUserPage(
       pagesNext: assignedUserPages.paging.next,
       currentIndex: 0,
     };
-    return await __checkForChosenPageinListOfPages(checkData);
+    return await __checkForChosenPageinListOfPages(checkData, next);
   } catch (error: any) {
     console.log('Facebook Error connecting System User to Page', error);
     return next(await $facebookErrorHandler(error));
@@ -191,37 +190,42 @@ export async function _getSystemUserAssignedFacebookPages(
 
 // checks to see if a page is included in the list of pages returned from a next url
 async function __checkForChosenPageinListOfPages(
-  options: IFacebookPageCheckInListOfPagesData
-): Promise<IFacebookPageLinkedStatus> {
-  const { pageId, pages, pagesTotalCount, pageLimit, pagesNext, currentIndex } = options;
-  const pagingTotal = Math.ceil(pagesTotalCount / pageLimit);
-  const pageIncludedArray = pages.filter((page: IFacebookPage) => {
-    return page.id === pageId;
-  });
-  const pageIncluded = !!pageIncludedArray.length;
-  // if doesnt find on current search page
-  if (!pageIncluded) {
-    // if subsequent page available
-    if (currentIndex < pagingTotal && pagesNext) {
-      const pagesResponse = await $apiRequest({
-        url: pagesNext,
-      });
-      const newPages = pagesResponse.data;
-      const searchData = {
-        pageId,
-        pages: newPages.data,
-        pagesTotalCount: newPages.summary.total_count,
-        pageLimit,
-        pagesNext: newPages.paging.next,
-        currentIndex: currentIndex + 1,
-      };
-      return __checkForChosenPageinListOfPages(searchData);
-      //if no other page available return that we didnt find it
+  options: IFacebookPageCheckInListOfPagesData,
+  next: NextFunction
+): Promise<IFacebookPageLinkedStatus | void> {
+  try {
+    const { pageId, pages, pagesTotalCount, pageLimit, pagesNext, currentIndex } = options;
+    const pagingTotal = Math.ceil(pagesTotalCount / pageLimit);
+    const pageIncludedArray = pages.filter((page: IFacebookPage) => {
+      return page.id === pageId;
+    });
+    const pageIncluded = !!pageIncludedArray.length;
+    // if doesnt find on current search page
+    if (!pageIncluded) {
+      // if subsequent page available
+      if (currentIndex < pagingTotal && pagesNext) {
+        const newPages = await $apiRequest({
+          url: pagesNext,
+        });
+        const searchData = {
+          pageId,
+          pages: newPages.data,
+          pagesTotalCount: newPages.summary.total_count,
+          pageLimit,
+          pagesNext: newPages.paging.next,
+          currentIndex: currentIndex + 1,
+        };
+        return __checkForChosenPageinListOfPages(searchData, next);
+        //if no other page available return that we didnt find it
+      } else {
+        return { status: FacebookPageLinkedStatus.not_linked };
+      }
+      // if finds it on current page
     } else {
-      return { status: FacebookPageLinkedStatus.not_linked };
+      return { status: FacebookPageLinkedStatus.linked };
     }
-    // if finds it on current page
-  } else {
-    return { status: FacebookPageLinkedStatus.linked };
+  } catch (error: any) {
+    console.log('Error Checking Page is in List', error);
+    return next(await $facebookErrorHandler(error));
   }
 }
