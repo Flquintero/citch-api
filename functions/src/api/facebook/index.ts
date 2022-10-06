@@ -26,6 +26,14 @@ facebookRouter.get(
   }
 );
 
+facebookRouter.get(
+  `/post-page/:postId`,
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.getPostPage(req, next));
+  }
+);
+
 facebookRouter.post(
   '/save-user',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
@@ -40,6 +48,15 @@ facebookRouter.post(
   }
 );
 
+facebookRouter.post(
+  '/confirm-accounts',
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    await facebookService.linkUserAccounts(req, next);
+    res.status(200).send('OK');
+  }
+);
+
 facebookRouter.put(
   '/disconnect-user',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
@@ -50,14 +67,6 @@ facebookRouter.put(
     };
     await organizationService.update(updateObject, next);
     res.status(200).send('OK');
-  }
-);
-
-facebookRouter.get(
-  `/post-page/:postId`,
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
-  async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.getPostPage(req, next));
   }
 );
 

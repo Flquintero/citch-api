@@ -8,22 +8,24 @@ import {
   _userAccessToken,
 } from './helpers/facebook-user-auth-handler';
 import { _getFacebookPost } from './helpers/facebook-post-requests';
-import { _getFacebookPage } from './helpers/facebook-page-requests';
+import {
+  _getFacebookPage,
+  _checkPageLinkedToAppBusinessManager,
+} from './helpers/facebook-page-requests';
+import { $stringifyParams } from '../../utils/stringify-params';
 // services
 import organizationsService from '../../services/organizations';
-// 3rd party
-import { stringify } from 'query-string';
 // types
 import { NextFunction, Request } from 'express';
 import { FacebookConnectionStatus } from '../../types/services/facebook';
 // constants
-import { FACEBOOK_URL } from './helpers/facebook-url-constants';
+import { FACEBOOK_URL } from './helpers/facebook-constants';
 
 export default {
   getFacebookConsentUrl: async function (options: Request, next: NextFunction) {
     try {
       const state = getRandomHash();
-      const stringifiedParams = stringify({
+      const stringifiedParams = await $stringifyParams({
         client_id: process.env.FACEBOOK_APP_ID,
         redirect_uri: `${process.env.REDIRECT_URI}/facebook`,
         scope: [
@@ -130,6 +132,29 @@ export default {
         },
         next
       );
+    } catch (error: any) {
+      console.log('Error Facebook Post Page', error);
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  linkUserAccounts: async function (req: Request, next: NextFunction) {
+    try {
+      const { pageId } = req.body;
+      const { access_token } = req.body.organization.facebookData;
+      const pageData = await _getFacebookPage(
+        {
+          pageId: pageId,
+          access_token,
+          fields: `access_token`,
+        },
+        next
+      );
+      const pageConnectData = {
+        pageId,
+        page_access_token: pageData.access_token,
+        pageLimit: 15,
+      };
+      const pageConnectedLength = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
     } catch (error: any) {
       console.log('Error Facebook Post Page', error);
       return next(await $facebookErrorHandler(error));

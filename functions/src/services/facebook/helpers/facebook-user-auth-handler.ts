@@ -1,15 +1,17 @@
+// helpers
 import { $apiRequest } from '../../../utils/https-call';
 import { $facebookErrorHandler } from '../../../utils/error-handler';
+import { $stringifyParams } from '../../../utils/stringify-params';
+
+// types
 import { NextFunction } from 'express';
 
-// 3rd party
-import { stringify } from 'query-string';
 //constants
-import { FACEBOOK_GRAPH_URL } from './facebook-url-constants';
+import { FACEBOOK_GRAPH_URL } from './facebook-constants';
 
 export async function _authUserData(code: string, next: NextFunction) {
   try {
-    const stringifiedParams = stringify({
+    const stringifiedParams = await $stringifyParams({
       client_id: process.env.FACEBOOK_APP_ID,
       client_secret: process.env.FACEBOOK_APP_SECRET,
       code,
@@ -25,7 +27,7 @@ export async function _authUserData(code: string, next: NextFunction) {
 }
 export async function _appAccessToken(next: NextFunction) {
   try {
-    const stringifiedParams = stringify({
+    const stringifiedParams = await $stringifyParams({
       client_id: process.env.FACEBOOK_APP_ID,
       client_secret: process.env.FACEBOOK_APP_SECRET,
       grant_type: 'client_credentials',
@@ -39,7 +41,7 @@ export async function _appAccessToken(next: NextFunction) {
 }
 export async function _longLivedUserAccessToken(userAccessToken: string, next: NextFunction) {
   try {
-    const stringifiedParams = stringify({
+    const stringifiedParams = await $stringifyParams({
       client_id: process.env.FACEBOOK_APP_ID,
       client_secret: process.env.FACEBOOK_APP_SECRET,
       grant_type: 'fb_exchange_token',
@@ -58,7 +60,7 @@ export async function _userAccessToken(
   next: NextFunction
 ) {
   try {
-    const stringifiedParams = stringify({
+    const stringifiedParams = await $stringifyParams({
       input_token: userLongLivedAccessToken,
       access_token: appAccessToken,
     });

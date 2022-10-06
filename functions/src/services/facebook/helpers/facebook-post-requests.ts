@@ -1,11 +1,13 @@
+// helpers
 import { $apiRequest } from '../../../utils/https-call';
 import { $facebookErrorHandler } from '../../../utils/error-handler';
+import { $stringifyParams } from '../../../utils/stringify-params';
+
+// types
 import { NextFunction } from 'express';
 
-// 3rd party
-import { stringify } from 'query-string';
-//constants
-import { FACEBOOK_GRAPH_URL } from './facebook-url-constants';
+// constants
+import { FACEBOOK_GRAPH_URL } from './facebook-constants';
 
 export async function _getFacebookPost(
   options: { postId: string; access_token: string; fields: string },
@@ -13,7 +15,7 @@ export async function _getFacebookPost(
 ) {
   try {
     const { postId, access_token, fields } = options;
-    const stringifiedParams = stringify({
+    const stringifiedParams = await $stringifyParams({
       fields,
       access_token,
     });
