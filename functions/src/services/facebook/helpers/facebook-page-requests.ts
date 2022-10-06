@@ -39,6 +39,26 @@ export async function _getFacebookPage(
     return next(await $facebookErrorHandler(error));
   }
 }
+export async function _getUserPages(
+  options: { userId: string; access_token: string; fields: string },
+  next: NextFunction
+): Promise<IFacebookPage[] | void> {
+  try {
+    const { access_token, fields, userId } = options;
+    const stringifiedParams = await $stringifyParams({
+      fields,
+      access_token,
+    });
+    // TO DO: Add paging to this, ad page limit and create paging ui and param for current page
+    const pagesResponse = await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${userId}/accounts?${stringifiedParams}`,
+    });
+    return pagesResponse.data;
+  } catch (error: any) {
+    console.log('Error Get Facebook Pages', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
 // If connected to our Business Manager
 export async function _checkPageLinkedToAppBusinessManager(
   options: { pageId: string; page_access_token: string },

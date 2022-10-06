@@ -34,6 +34,14 @@ facebookRouter.get(
   }
 );
 
+facebookRouter.get(
+  `/user-pages`,
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.getUserPages(req, next));
+  }
+);
+
 facebookRouter.post(
   '/save-user',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],

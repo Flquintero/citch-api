@@ -14,6 +14,7 @@ import {
   _connectUserPageToAppBusinessManager,
   _connectSystemUserToUserPage,
   _checkSystemUserConnectedToUserPage,
+  _getUserPages,
 } from './helpers/facebook-page-requests';
 import { $stringifyParams } from '../../utils/stringify-params';
 // services
@@ -142,6 +143,18 @@ export default {
       );
     } catch (error: any) {
       console.log('Error Facebook Post Page', error);
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  getUserPages: async function (req: Request, next: NextFunction) {
+    try {
+      const { access_token, user_id } = req.body.organization.facebookData;
+      return await _getUserPages(
+        { userId: user_id, access_token, fields: `id,name,picture` },
+        next
+      );
+    } catch (error: any) {
+      console.log('Error Facebook Get User Pages', error);
       return next(await $facebookErrorHandler(error));
     }
   },
