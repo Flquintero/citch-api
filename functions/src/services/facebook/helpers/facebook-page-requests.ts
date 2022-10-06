@@ -5,6 +5,12 @@ import { $stringifyParams } from '../../../utils/stringify-params';
 
 // types
 import { NextFunction } from 'express';
+import {
+  IFacebookPage,
+  IFacebookPageCheckInListOfPagesData,
+  IFacebookPageLinkedStatus,
+  FacebookPageLinkedStatus,
+} from '../../../types/services/facebook';
 
 //constants
 import {
@@ -17,7 +23,7 @@ import {
 export async function _getFacebookPage(
   options: { pageId: string; access_token: string; fields: string },
   next: NextFunction
-) {
+): Promise<IFacebookPage | void> {
   try {
     const { pageId, access_token, fields } = options;
 
@@ -37,12 +43,23 @@ export async function _getFacebookPage(
 export async function _checkPageLinkedToAppBusinessManager(
   options: { pageId: string; page_access_token: string; pageLimit: number },
   next: NextFunction
-) {
+): Promise<IFacebookPageLinkedStatus | void> {
   try {
-    const linkedPages = await _getLinkedPagesToAppBusinessManager({ pageLimit: 15 }, next);
-    console.log('linked pages', linkedPages);
+    const pageLimit = 15;
+    const { pageId } = options;
+    const linkedPages = await _getLinkedPagesToAppBusinessManager({ pageLimit }, next);
+    console.log('linkedPages', linkedPages);
+    const checkData: IFacebookPageCheckInListOfPagesData = {
+      pageId,
+      pages: linkedPages.data,
+      pagesTotalCount: linkedPages.summary.total_count,
+      pageLimit,
+      pagesNext: linkedPages.paging.next,
+      currentIndex: 0,
+    };
+    return await __checkForChosenPageinListOfPages(checkData);
   } catch (error: any) {
-    console.log('Error Page Linked to Business Manager', error);
+    console.log('Error Check Page Linked to Business Manager', error);
     return next(await $facebookErrorHandler(error));
   }
 }
@@ -63,5 +80,44 @@ export async function _getLinkedPagesToAppBusinessManager(
   } catch (error: any) {
     console.log('Error Get Linked Pages to Business Manager', error);
     return next(await $facebookErrorHandler(error));
+  }
+}
+
+// Local Helpers
+
+// checks to see if a page is included in the list of pages returned from a next url
+async function __checkForChosenPageinListOfPages(
+  options: IFacebookPageCheckInListOfPagesData
+): Promise<IFacebookPageLinkedStatus> {
+  const { pageId, pages, pagesTotalCount, pageLimit, pagesNext, currentIndex } = options;
+  const pagingTotal = Math.ceil(pagesTotalCount / pageLimit);
+  const pageIncludedArray = pages.filter((page: IFacebookPage) => {
+    return page.id === pageId;
+  });
+  const pageIncluded = !!pageIncludedArray.length;
+  // if doesnt find on current search page
+  if (!pageIncluded) {
+    // if subsequent page available
+    if (currentIndex < pagingTotal && pagesNext) {
+      const pagesResponse = await $apiRequest({
+        url: pagesNext,
+      });
+      const newPages = pagesResponse.data;
+      const searchData = {
+        pageId,
+        pages: newPages.data,
+        pagesTotalCount: newPages.summary.total_count,
+        pageLimit,
+        pagesNext: newPages.paging.next,
+        currentIndex: currentIndex + 1,
+      };
+      return __checkForChosenPageinListOfPages(searchData);
+      //if no other page available return that we didnt find it
+    } else {
+      return { status: FacebookPageLinkedStatus.not_linked };
+    }
+    // if finds it on current page
+  } else {
+    return { status: FacebookPageLinkedStatus.linked };
   }
 }

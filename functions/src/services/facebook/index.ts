@@ -17,7 +17,12 @@ import { $stringifyParams } from '../../utils/stringify-params';
 import organizationsService from '../../services/organizations';
 // types
 import { NextFunction, Request } from 'express';
-import { FacebookConnectionStatus } from '../../types/services/facebook';
+import {
+  FacebookConnectionStatus,
+  IFacebookPage,
+  FacebookPageLinkedStatus,
+  FacebookPageLinkedMessage,
+} from '../../types/services/facebook';
 // constants
 import { FACEBOOK_URL } from './helpers/facebook-constants';
 
@@ -151,10 +156,16 @@ export default {
       );
       const pageConnectData = {
         pageId,
-        page_access_token: pageData.access_token,
+        page_access_token: (pageData as IFacebookPage).access_token as string,
         pageLimit: 15,
       };
-      const pageConnectedLength = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
+      const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
+      if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
+        //
+        return FacebookPageLinkedMessage.link_success;
+      } else {
+        return FacebookPageLinkedMessage.already_linked;
+      }
     } catch (error: any) {
       console.log('Error Facebook Post Page', error);
       return next(await $facebookErrorHandler(error));
