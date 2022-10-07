@@ -151,7 +151,7 @@ export async function _connectSystemUserToUserPage(
       },
     });
   } catch (error: any) {
-    console.log('Facebook Error connecting System User to Page', error);
+    console.log('Facebook Error connecting System User to Page', error.data);
     return next(await $facebookErrorHandler(error));
   }
 }
@@ -175,7 +175,7 @@ export async function _checkSystemUserConnectedToUserPage(
     };
     return await __checkForChosenPageinListOfPages(checkData, next);
   } catch (error: any) {
-    console.log('Facebook Error connecting System User to Page', error);
+    console.log('Facebook Error Checking connecting System User to Page', error.data);
     return next(await $facebookErrorHandler(error));
   }
 }

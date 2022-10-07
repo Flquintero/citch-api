@@ -160,28 +160,24 @@ export default {
   },
   linkUserAccounts: async function (req: Request, next: NextFunction) {
     try {
-      const { pageId } = req.body;
+      const { facebookPageData } = req.body;
+      const pageId = facebookPageData.id;
       const { access_token } = req.body.organization.facebookData;
-      const pageData = await _getFacebookPage(
-        {
-          pageId: pageId,
-          access_token,
-          fields: `access_token`,
-        },
-        next
-      );
+
       // Allow Citch page through, it doesnt list it in options
       if (pageId === FACEBOOK_APP_PAGE_ID) {
         return FacebookPageLinkedMessage.already_linked;
       }
+      // End of Citch hack
+
       const pageConnectData = {
         pageId,
-        page_access_token: (pageData as IFacebookPage).access_token as string,
+        page_access_token: (facebookPageData as IFacebookPage).access_token as string,
       };
       const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
       console.log('pageLinkedObject', pageLinkedObject);
-      return;
       if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
+        console.log('NOT LINKED');
         await _connectUserPageToAppBusinessManager(
           { user_access_token: access_token, pageId },
           next
@@ -191,15 +187,17 @@ export default {
         await _connectSystemUserToUserPage({ pageId }, next);
         return FacebookPageLinkedMessage.link_success;
       } else {
+        console.log('LINKED');
         //CHECK TO SEE IF SYSTEM USER HAS PAGE IF NOT CONNECT IT (IT SHOULD BE BECAUSE OF THE ABOVE PROCESS)
         const systemUserConnected = await _checkSystemUserConnectedToUserPage({ pageId }, next);
+        console.log('systemUserConnected', systemUserConnected);
         if (systemUserConnected?.status === FacebookPageLinkedStatus.not_linked) {
           await _connectSystemUserToUserPage({ pageId }, next);
         }
         return FacebookPageLinkedMessage.already_linked;
       }
     } catch (error: any) {
-      console.log('Error Facebook Linking Accounts', error);
+      console.log('Error Facebook Linking Accounts', error.data);
       return next(await $facebookErrorHandler(error));
     }
   },

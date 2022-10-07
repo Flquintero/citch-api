@@ -2,6 +2,8 @@
 import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
 import { $idTokenVerification } from '../../middleware/firebase/user-token/firebase-user-token-verification';
 import { $getUserOrganization } from '../../middleware/organizations/fetch-user-organization';
+import { $getFacebookPage } from '../../middleware/facebook/fetch-user-facebook-page';
+import { $getFacebookPost } from '../../middleware/facebook/fetch-user-facebook-post';
 // services
 import facebookService from '../../services/facebook';
 import organizationService from '../../services/organizations';
@@ -58,10 +60,17 @@ facebookRouter.post(
 
 facebookRouter.post(
   '/confirm-accounts',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+    $getFacebookPost,
+  ],
   async (req: Request, res: Response, next: NextFunction) => {
-    await facebookService.linkUserAccounts(req, next);
-    res.status(200).send('OK');
+    const connectedStatusMessage = await facebookService.linkUserAccounts(req, next);
+    const postId = req.body.facebookPostData?.id;
+    res.json({ status: connectedStatusMessage, ...(postId ? { postId: postId } : null) });
   }
 );
 
