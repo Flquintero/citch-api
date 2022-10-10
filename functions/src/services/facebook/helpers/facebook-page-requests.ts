@@ -18,6 +18,7 @@ import {
   FACEBOOK_SYSTEM_USER_ID,
   FACEBOOK_BUSINESS_ID,
   FACEBOOK_SYSTEM_USER_TOKEN,
+  FACEBOOK_API_VERSION,
 } from './facebook-constants';
 
 export async function _getFacebookPage(
@@ -32,7 +33,7 @@ export async function _getFacebookPage(
       access_token,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${pageId}?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log('Error Get Facebook Page', error);
@@ -51,7 +52,7 @@ export async function _getUserPages(
     });
     // TO DO: Add paging to this, ad page limit and create paging ui and param for current page
     const pagesResponse = await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${userId}/accounts?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${userId}/accounts?${stringifiedParams}`,
     });
     return pagesResponse.data;
   } catch (error: any) {
@@ -94,7 +95,7 @@ export async function _getLinkedPagesToAppBusinessManager(
       access_token: FACEBOOK_SYSTEM_USER_TOKEN,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log('Error Get Linked Pages to Business Manager', error);
@@ -118,7 +119,7 @@ export async function _connectUserPageToAppBusinessManager(
       headers: {
         'Content-Type': 'application/json',
       },
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
       data: {
         page_id: pageId,
         permitted_tasks: ['MANAGE'],
@@ -143,7 +144,7 @@ export async function _connectSystemUserToUserPage(
     });
     return await $apiRequest({
       method: 'post',
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,
       data: {
         tasks: ['MANAGE'],
         user: FACEBOOK_SYSTEM_USER_ID,
@@ -193,7 +194,7 @@ export async function _getSystemUserAssignedFacebookPages(
       summary: 'total_count',
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_SYSTEM_USER_ID}/assigned_pages?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_SYSTEM_USER_ID}/assigned_pages?${stringifiedParams}`,
       data: {
         tasks: ['MANAGE'],
         user: FACEBOOK_SYSTEM_USER_ID,

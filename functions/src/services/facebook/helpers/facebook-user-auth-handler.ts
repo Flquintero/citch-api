@@ -7,7 +7,7 @@ import { $stringifyParams } from '../../../utils/stringify-params';
 import { NextFunction } from 'express';
 
 //constants
-import { FACEBOOK_GRAPH_URL } from './facebook-constants';
+import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION } from './facebook-constants';
 
 export async function _authUserData(code: string, next: NextFunction) {
   try {
@@ -18,7 +18,7 @@ export async function _authUserData(code: string, next: NextFunction) {
       redirect_uri: `${process.env.REDIRECT_URI}/facebook`,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log('Error Facebook Auth User Data', error);
@@ -33,7 +33,7 @@ export async function _appAccessToken(next: NextFunction) {
       grant_type: 'client_credentials',
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
     });
   } catch (error: any) {
     return next(await $facebookErrorHandler(error));
@@ -48,7 +48,7 @@ export async function _longLivedUserAccessToken(userAccessToken: string, next: N
       fb_exchange_token: userAccessToken,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/oauth/access_token?${stringifiedParams}`,
     });
   } catch (error: any) {
     return next(await $facebookErrorHandler(error));
@@ -65,7 +65,7 @@ export async function _userAccessToken(
       access_token: appAccessToken,
     });
     const userAccessTokenData = await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/debug_token?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/debug_token?${stringifiedParams}`,
     });
     return userAccessTokenData.data; // yes it has 2 data objects;
   } catch (error: any) {

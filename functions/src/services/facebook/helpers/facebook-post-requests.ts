@@ -7,7 +7,7 @@ import { $stringifyParams } from '../../../utils/stringify-params';
 import { NextFunction } from 'express';
 
 // constants
-import { FACEBOOK_GRAPH_URL } from './facebook-constants';
+import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION } from './facebook-constants';
 
 export async function _getFacebookPost(
   options: { postId: string; access_token: string; fields: string },
@@ -20,7 +20,7 @@ export async function _getFacebookPost(
       access_token,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${postId}?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${postId}?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log('Error Facebook Auth User Data', error);

@@ -11,12 +11,12 @@ let $firestormErrorHandler = async (error: any) => {
 };
 let $facebookErrorHandler = async (error: any) => {
   let returnError = error;
-  if (error.data) {
-    if (error.data.error.error_user_msg) {
-      returnError = error.data.error.error_user_msg;
-    } else if (error.data.error.message) {
-      returnError = error.data.error.message;
-    }
+  console.log('ERRORR DATA', error.response.data);
+  if (error.response) {
+    returnError = {
+      code: error.response.status,
+      message: error.response.statusText,
+    };
   }
   return returnError;
 };
