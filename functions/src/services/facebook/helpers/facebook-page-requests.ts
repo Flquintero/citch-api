@@ -116,13 +116,10 @@ export async function _connectUserPageToAppBusinessManager(
     });
     return await $apiRequest({
       method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
       data: {
         page_id: pageId,
-        permitted_tasks: ['MANAGE'],
+        permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
       },
     });
   } catch (error: any) {
@@ -146,7 +143,7 @@ export async function _connectSystemUserToUserPage(
       method: 'post',
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,
       data: {
-        tasks: ['MANAGE'],
+        tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
         user: FACEBOOK_SYSTEM_USER_ID,
         business: FACEBOOK_BUSINESS_ID,
       },

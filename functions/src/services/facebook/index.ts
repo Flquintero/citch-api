@@ -44,9 +44,10 @@ export default {
           'business_management',
           'pages_read_engagement',
           'instagram_basic',
-          //revoked: 'pages_manage_ads',
+          'pages_manage_ads', // revoked need new
           'public_profile',
           'pages_show_list',
+          'pages_manage_metadata', // need to ask for it in review
         ].join(','), // comma seperated string
         response_type: 'code',
         auth_type: 'rerequest',
@@ -175,9 +176,7 @@ export default {
         page_access_token: (facebookPageData as IFacebookPage).access_token as string,
       };
       const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
-      console.log('pageLinkedObject', pageLinkedObject);
       if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
-        console.log('NOT LINKED');
         await _connectUserPageToAppBusinessManager(
           { user_access_token: access_token, pageId },
           next
@@ -187,7 +186,6 @@ export default {
         await _connectSystemUserToUserPage({ pageId }, next);
         return FacebookPageLinkedMessage.link_success;
       } else {
-        console.log('LINKED');
         //CHECK TO SEE IF SYSTEM USER HAS PAGE IF NOT CONNECT IT (IT SHOULD BE BECAUSE OF THE ABOVE PROCESS)
         const systemUserConnected = await _checkSystemUserConnectedToUserPage({ pageId }, next);
         console.log('systemUserConnected', systemUserConnected);
