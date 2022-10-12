@@ -23,7 +23,7 @@ export async function _getFacebookPost(
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${postId}?${stringifiedParams}`,
     });
   } catch (error: any) {
-    console.log('Error Facebook Auth User Data', error);
+    console.log('Error Facebook Get Post', error);
     return next(await $facebookErrorHandler(error));
   }
 }

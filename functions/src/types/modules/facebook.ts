@@ -30,6 +30,12 @@ export interface IFacebookPageLinkedStatus {
   status: FacebookPageLinkedStatus;
 }
 
+export interface IFacebookCreateCampaignData {
+  name?: string;
+  objective?: string;
+  [property: string]: any;
+}
+
 export enum FacebookPageLinkedMessage {
   already_linked = 'Page Already Connected',
   link_success = 'Page Connection Success',

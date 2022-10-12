@@ -8,6 +8,7 @@ import {
   _userAccessToken,
 } from './helpers/facebook-user-auth-handler';
 import { _getFacebookPost } from './helpers/facebook-post-requests';
+import { _createFacebookCampaign } from './helpers/facebook-campaign-requests';
 import {
   _getFacebookPage,
   _checkPageLinkedToAppBusinessManager,
@@ -156,6 +157,17 @@ export default {
       );
     } catch (error: any) {
       console.log('Error Facebook Get User Pages', error);
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  createCampaign: async function (req: Request, next: NextFunction) {
+    try {
+      const { campaignCreateData } = req.body;
+      let campaign = await _createFacebookCampaign({ campaignCreateData }, next);
+      console.log('campaign', campaign);
+      return campaign;
+    } catch (error: any) {
+      console.log('Error Facebook Create Campaign', error);
       return next(await $facebookErrorHandler(error));
     }
   },
