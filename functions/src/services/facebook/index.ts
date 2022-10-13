@@ -18,6 +18,7 @@ import {
   _getUserPages,
 } from './helpers/facebook-page-requests';
 import { $stringifyParams } from '../../utils/stringify-params';
+import { _getCreateDBFacebookCampaignPayload } from './helpers/payload-builder';
 // services
 import organizationsService from '../../services/organizations';
 // types
@@ -30,6 +31,9 @@ import {
 } from '../../types/modules/facebook';
 // constants
 import { FACEBOOK_URL, FACEBOOK_APP_PAGE_ID } from './helpers/facebook-constants';
+// declarations
+import { db } from '../../config/firebase';
+const FACEBOOK_CAMPAIGNS_DB = db.collection('facebook_campaigns');
 
 export default {
   getFacebookConsentUrl: async function (options: Request, next: NextFunction) {
@@ -162,10 +166,17 @@ export default {
   },
   createCampaign: async function (req: Request, next: NextFunction) {
     try {
-      const { campaignCreateData } = req.body;
-      let campaign = await _createFacebookCampaign({ campaignCreateData }, next);
-      console.log('campaign', campaign);
-      return campaign;
+      const { campaignCreateData, organizationId } = req.body;
+      const createdFacebookcampaign = await _createFacebookCampaign({ campaignCreateData }, next);
+      console.log('campaign', createdFacebookcampaign);
+      await FACEBOOK_CAMPAIGNS_DB.add(
+        await _getCreateDBFacebookCampaignPayload({
+          facebookCampaignId: createdFacebookcampaign.id,
+          organizationPathId: `organizations/${organizationId}`,
+        })
+      );
+      console.log('campaign', createdFacebookcampaign);
+      return createdFacebookcampaign;
     } catch (error: any) {
       console.log('Error Facebook Create Campaign', error);
       return next(await $facebookErrorHandler(error));
