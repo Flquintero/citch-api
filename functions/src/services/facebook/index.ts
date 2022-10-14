@@ -8,7 +8,10 @@ import {
   _userAccessToken,
 } from './helpers/facebook-user-auth-handler';
 import { _getFacebookPost } from './helpers/facebook-post-requests';
-import { _createFacebookCampaign } from './helpers/facebook-campaign-requests';
+import {
+  _createFacebookCampaign,
+  _updateFacebookCampaign,
+} from './helpers/facebook-campaign-requests';
 import {
   _getFacebookPage,
   _checkPageLinkedToAppBusinessManager,
@@ -18,7 +21,10 @@ import {
   _getUserPages,
 } from './helpers/facebook-page-requests';
 import { $stringifyParams } from '../../utils/stringify-params';
-import { _getCreateDBFacebookCampaignPayload } from './helpers/payload-builder';
+import {
+  _getCreateDBFacebookCampaignPayload,
+  _getupdateDBFacebookCampaignPayload,
+} from './helpers/payload-builder';
 // services
 import organizationsService from '../../services/organizations';
 // types
@@ -166,17 +172,26 @@ export default {
   },
   createCampaign: async function (req: Request, next: NextFunction) {
     try {
-      const { campaignCreateData, organizationId } = req.body;
-      const createdFacebookcampaign = await _createFacebookCampaign({ campaignCreateData }, next);
-      console.log('campaign', createdFacebookcampaign);
+      const { campaignData, organizationId } = req.body;
+      const createdFacebookcampaign = await _createFacebookCampaign({ campaignData }, next);
       await FACEBOOK_CAMPAIGNS_DB.add(
         await _getCreateDBFacebookCampaignPayload({
           facebookCampaignId: createdFacebookcampaign.id,
           organizationPathId: `organizations/${organizationId}`,
         })
       );
-      console.log('campaign', createdFacebookcampaign);
       return createdFacebookcampaign;
+    } catch (error: any) {
+      console.log('Error Facebook Create Campaign', error);
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  updateCampaign: async function (req: Request, next: NextFunction) {
+    try {
+      const { campaignData } = req.body;
+      const updatedFacebookcampaign = await _updateFacebookCampaign({ campaignData }, next);
+      await FACEBOOK_CAMPAIGNS_DB.add(await _getupdateDBFacebookCampaignPayload());
+      return updatedFacebookcampaign;
     } catch (error: any) {
       console.log('Error Facebook Create Campaign', error);
       return next(await $facebookErrorHandler(error));

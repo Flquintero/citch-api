@@ -30,7 +30,8 @@ export interface IFacebookPageLinkedStatus {
   status: FacebookPageLinkedStatus;
 }
 
-export interface IFacebookCreateCampaignData {
+export interface IFacebookCampaignData {
+  id?: string;
   name?: string;
   objective?: string;
   [property: string]: any;

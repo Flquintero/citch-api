@@ -13,5 +13,10 @@ let _getCreateDBFacebookCampaignPayload = async (options: {
     updatedOn: FieldValue.serverTimestamp(),
   };
 };
+let _getupdateDBFacebookCampaignPayload = async () => {
+  return {
+    updatedOn: FieldValue.serverTimestamp(),
+  };
+};
 
-export { _getCreateDBFacebookCampaignPayload };
+export { _getCreateDBFacebookCampaignPayload, _getupdateDBFacebookCampaignPayload };
