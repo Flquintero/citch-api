@@ -52,3 +52,11 @@ export enum FacebookConnectionStatus {
   connected, // 1
   expired, // 2
 }
+
+export enum EFacebookObjectives {
+  impressions,
+  reach,
+  engagements,
+  video_views,
+  citch_reach,
+}

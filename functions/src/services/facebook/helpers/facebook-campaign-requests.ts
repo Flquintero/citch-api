@@ -8,23 +8,19 @@ import { NextFunction } from 'express';
 import { IFacebookCampaignData } from '../../../types/modules/facebook';
 
 // constants
-import {
-  FACEBOOK_GRAPH_URL,
-  FACEBOOK_API_VERSION,
-  FACEBOOK_SYSTEM_USER_TOKEN,
-} from './facebook-constants';
+import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } from './facebook-constants';
 
 export async function _createFacebookCampaign(
-  options: { campaignData: IFacebookCampaignData },
+  options: { facebookCampaignData: IFacebookCampaignData },
   next: NextFunction
 ) {
   try {
-    const { campaignData } = options;
+    const { facebookCampaignData } = options;
     return await $apiRequest({
       method: 'post',
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/act_${await _chooseFromAvailableAdAccounts()}/campaigns`,
       data: {
-        ...campaignData, // needs to match all the user generated params that facebook takes see https://developers.facebook.com/docs/marketing-apis/get-started
+        ...facebookCampaignData, // needs to match all the user generated params that facebook takes see https://developers.facebook.com/docs/marketing-apis/get-started
         status: 'PAUSED',
         special_ad_categories: [],
         access_token: FACEBOOK_SYSTEM_USER_TOKEN,
@@ -36,10 +32,7 @@ export async function _createFacebookCampaign(
   }
 }
 
-export async function _updateFacebookCampaign(
-  options: { campaignData: IFacebookCampaignData },
-  next: NextFunction
-) {
+export async function _updateFacebookCampaign(options: { campaignData: IFacebookCampaignData }, next: NextFunction) {
   try {
     const { campaignData } = options;
     const { campaignId, ...updateContent } = campaignData;

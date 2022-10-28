@@ -1,13 +1,16 @@
 import { FieldValue } from '../../../config/firebase';
 import { $toDocReference } from '../../../utils/firebase/firestorm/firebase-firestorm-helpers';
+import { EFacebookObjectives } from '../../../types/modules/facebook';
 
 let _getCreateDBFacebookCampaignPayload = async (options: {
-  facebookCampaignId: string;
+  facebookCampaigns: string[];
+  facebookObjectiveIdentifier: EFacebookObjectives;
   organizationPathId: string;
 }) => {
-  const { facebookCampaignId, organizationPathId } = options;
+  const { facebookCampaigns, organizationPathId, facebookObjectiveIdentifier } = options;
   return {
-    facebookCampaignId,
+    facebookCampaigns,
+    facebookObjectiveIdentifier,
     organization: await $toDocReference(organizationPathId as string),
     createdOn: FieldValue.serverTimestamp(),
     updatedOn: FieldValue.serverTimestamp(),

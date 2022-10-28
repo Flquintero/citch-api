@@ -8,10 +8,7 @@ import {
   _userAccessToken,
 } from './helpers/facebook-user-auth-handler';
 import { _getFacebookPost } from './helpers/facebook-post-requests';
-import {
-  _createFacebookCampaign,
-  _updateFacebookCampaign,
-} from './helpers/facebook-campaign-requests';
+import { _createFacebookCampaign, _updateFacebookCampaign } from './helpers/facebook-campaign-requests';
 import {
   _getFacebookPage,
   _checkPageLinkedToAppBusinessManager,
@@ -21,10 +18,7 @@ import {
   _getUserPages,
 } from './helpers/facebook-page-requests';
 import { $stringifyParams } from '../../utils/stringify-params';
-import {
-  _getCreateDBFacebookCampaignPayload,
-  _getupdateDBFacebookCampaignPayload,
-} from './helpers/payload-builder';
+import { _getCreateDBFacebookCampaignPayload, _getupdateDBFacebookCampaignPayload } from './helpers/payload-builder';
 // services
 import organizationsService from '../../services/organizations';
 // types
@@ -80,10 +74,7 @@ export default {
         // app access token - available in the app dashboard but need to get it dinamically in case it is expired
         const appAccessTokenData = await _appAccessToken(next);
         // exchange shortlived token for a long lived one for user
-        const longLivedAccessTokenData = await _longLivedUserAccessToken(
-          userAuthData.access_token,
-          next
-        );
+        const longLivedAccessTokenData = await _longLivedUserAccessToken(userAuthData.access_token, next);
         // get all the token data to populate the data we are saving to DB
         const userAccessTokenData = await _userAccessToken(
           longLivedAccessTokenData.access_token,
@@ -161,10 +152,7 @@ export default {
   getUserPages: async function (req: Request, next: NextFunction) {
     try {
       const { access_token, user_id } = req.body.organization.facebookData;
-      return await _getUserPages(
-        { userId: user_id, access_token, fields: `id,name,picture` },
-        next
-      );
+      return await _getUserPages({ userId: user_id, access_token, fields: `id,name,picture` }, next);
     } catch (error: any) {
       console.log('Error Facebook Get User Pages', error);
       return next(await $facebookErrorHandler(error));
@@ -173,14 +161,22 @@ export default {
   createCampaign: async function (req: Request, next: NextFunction) {
     try {
       const { campaignData, organizationId } = req.body;
-      const createdFacebookcampaign = await _createFacebookCampaign({ campaignData }, next);
+      const { facebookObjectiveValues, facebookObjectiveIdentifier, ...facebookCampaignData } = campaignData;
+      const createdFacebookCampaigns = await Promise.all(
+        facebookObjectiveValues.map(async () => {
+          facebookCampaignData.objective = facebookObjectiveValues[0]; // Need to make this use the values list to create multiple campaigns for the citch_reach
+          const savedFacebookCampaign = await _createFacebookCampaign({ facebookCampaignData }, next);
+          return savedFacebookCampaign.id;
+        })
+      );
       await FACEBOOK_CAMPAIGNS_DB.add(
         await _getCreateDBFacebookCampaignPayload({
-          facebookCampaignId: createdFacebookcampaign.id,
+          facebookCampaigns: createdFacebookCampaigns,
+          facebookObjectiveIdentifier,
           organizationPathId: `organizations/${organizationId}`,
         })
       );
-      return createdFacebookcampaign;
+      return createdFacebookCampaigns;
     } catch (error: any) {
       console.log('Error Facebook Create Campaign', error);
       return next(await $facebookErrorHandler(error));
@@ -215,10 +211,7 @@ export default {
       };
       const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
       if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
-        await _connectUserPageToAppBusinessManager(
-          { user_access_token: access_token, pageId },
-          next
-        );
+        await _connectUserPageToAppBusinessManager({ user_access_token: access_token, pageId }, next);
 
         //CONNECT SYSTEM USER TO PAGE BECAUSE IF WE NEED TO CONNECT TO BIZ MANAGER MEANS PAGE NOT CONNECTED
         await _connectSystemUserToUserPage({ pageId }, next);
