@@ -16,8 +16,14 @@ let _getCreateDBFacebookCampaignPayload = async (options: {
     updatedOn: FieldValue.serverTimestamp(),
   };
 };
-let _getupdateDBFacebookCampaignPayload = async () => {
+let _getupdateDBFacebookCampaignPayload = async (options: {
+  facebookCampaigns: string[];
+  facebookObjectiveIdentifier: EFacebookObjectives;
+}) => {
+  const { facebookCampaigns, facebookObjectiveIdentifier } = options;
   return {
+    facebookCampaigns,
+    facebookObjectiveIdentifier,
     updatedOn: FieldValue.serverTimestamp(),
   };
 };
