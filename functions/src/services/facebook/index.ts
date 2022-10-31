@@ -183,6 +183,10 @@ export default {
     }
   },
   updateCampaign: async function (req: Request, next: NextFunction) {
+    // include middleware that gets campaign from facebook ?
+    // include helper that deletes campaigns if either original or target is citch reach and just create new ones
+    // then change name and objective value then change identifier in DB ( maybe replace campaign values)
+    // pseudo code above ^^^^^^^^^^^^^^
     // try {
     //   const { campaignData } = req.body;
     //   const { campaignIds, facebookObjectiveIdentifier, ...facebookCampaignData } = campaignData;
