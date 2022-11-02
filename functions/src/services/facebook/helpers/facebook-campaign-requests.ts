@@ -8,6 +8,7 @@ import { NextFunction } from 'express';
 import {
   IFacebookCampaignData,
   ICreateCampaignResponse,
+  ICreateMultipleCampaignsResponse,
   EFacebookObjectiveValue,
 } from '../../../types/modules/facebook';
 
@@ -18,19 +19,25 @@ import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } 
 export async function _createMultipleFacebookCampaigns(
   options: { facebookObjectiveValues: EFacebookObjectiveValue[]; facebookCampaignData: IFacebookCampaignData },
   next: NextFunction
-): Promise<string[]> {
-  const { facebookObjectiveValues, facebookCampaignData } = options;
-  const createCampaignsArray = await Promise.all(
-    facebookObjectiveValues.map(async (facebookObjectiveValue: EFacebookObjectiveValue) => {
-      facebookCampaignData.objective = facebookObjectiveValue;
-      const savedFacebookCampaignObject = await _createFacebookCampaign({ facebookCampaignData }, next);
-      facebookCampaignData.facebookAdAccount = (
-        savedFacebookCampaignObject as ICreateCampaignResponse
-      ).facebookAdAccount;
-      return (savedFacebookCampaignObject as ICreateCampaignResponse).campaign.id;
-    })
-  );
-  return createCampaignsArray as string[];
+): Promise<ICreateMultipleCampaignsResponse | void> {
+  try {
+    const { facebookObjectiveValues, facebookCampaignData } = options;
+    const createCampaignsArray = await Promise.all(
+      facebookObjectiveValues.map(async (facebookObjectiveValue: EFacebookObjectiveValue) => {
+        facebookCampaignData.objective = facebookObjectiveValue;
+        const savedFacebookCampaignObject = (await _createFacebookCampaign(
+          { facebookCampaignData },
+          next
+        )) as ICreateCampaignResponse;
+        facebookCampaignData.facebookAdAccount = savedFacebookCampaignObject.facebookAdAccount;
+        return savedFacebookCampaignObject.campaign.id;
+      })
+    );
+    return { facebookAdAccount: facebookCampaignData.facebookAdAccount, campaigns: createCampaignsArray as string[] };
+  } catch (error: any) {
+    console.log('Error Facebook  Multiple Campaign', error);
+    return next(await $facebookErrorHandler(error));
+  }
 }
 
 export async function _createFacebookCampaign(
@@ -41,8 +48,6 @@ export async function _createFacebookCampaign(
     const { facebookCampaignData } = options;
     const { facebookAdAccount } = facebookCampaignData; // saved Ad account from first campaign i.e citch_reach
     // We need to reuse ad account if using citch_reach to save both campaigns in same place
-    console.log('facebookCampaignData', facebookCampaignData.objective);
-    console.log('facebookAdAccount', facebookAdAccount);
     const currentFacebookAdAccount = facebookAdAccount ? facebookAdAccount : await _chooseFromAvailableAdAccounts();
     const campaign = await $apiRequest({
       method: 'post',
@@ -64,7 +69,29 @@ export async function _createFacebookCampaign(
   }
 }
 
-export async function _updateFacebookCampaign(options: { campaignData: IFacebookCampaignData }, next: NextFunction) {
+export async function _updateMultipleFacebookCampaigns(
+  options: { campaignData: any; facebookCampaigns: any },
+  next: NextFunction
+): Promise<boolean[] | void> {
+  try {
+    const { campaignData, facebookCampaigns } = options;
+    campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
+    await Promise.all(
+      facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
+        campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
+        await _updateFacebookCampaign({ campaignData }, next);
+      })
+    );
+  } catch (error: any) {
+    console.log('Error Facebook Update Multiple Campaign', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
+export async function _updateFacebookCampaign(
+  options: { campaignData: IFacebookCampaignData },
+  next: NextFunction
+): Promise<IFacebookCampaignData | void> {
   try {
     const { campaignData } = options;
     const {
@@ -87,7 +114,10 @@ export async function _updateFacebookCampaign(options: { campaignData: IFacebook
     return next(await $facebookErrorHandler(error));
   }
 }
-export async function _deleteFacebookCampaign(options: { campaignId: string }, next: NextFunction) {
+export async function _deleteFacebookCampaign(
+  options: { campaignId: string },
+  next: NextFunction
+): Promise<boolean | void> {
   try {
     const { campaignId } = options;
     return await $apiRequest({
@@ -106,11 +136,16 @@ export async function _deleteFacebookCampaign(options: { campaignId: string }, n
 export async function _deleteMultipleFacebookCampaigns(
   options: { facebookCampaigns: string[] },
   next: NextFunction
-): Promise<boolean[]> {
-  const { facebookCampaigns } = options;
-  return await Promise.all(
-    facebookCampaigns.map(async (campaignId: string) => {
-      return await _deleteFacebookCampaign({ campaignId }, next);
-    })
-  );
+): Promise<boolean[] | void> {
+  try {
+    const { facebookCampaigns } = options;
+    return await Promise.all(
+      facebookCampaigns.map(async (campaignId: string) => {
+        return (await _deleteFacebookCampaign({ campaignId }, next)) as boolean;
+      })
+    );
+  } catch (error: any) {
+    console.log('Error Facebook Delete Multiple Campaign', error);
+    return next(await $facebookErrorHandler(error));
+  }
 }

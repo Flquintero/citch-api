@@ -42,11 +42,16 @@ export interface ICreateCampaignResponse {
   facebookAdAccount: string;
 }
 
-export interface IDBFacebookCampaign {
-  facebookCampaigns: string[];
-  facebookObjectiveIdentifier: EFacebookObjectiveIdentifier;
+export interface ICreateMultipleCampaignsResponse {
+  campaigns: string[];
   facebookAdAccount: string;
-  organizationPathId: string;
+}
+
+export interface IDBFacebookCampaign {
+  facebookCampaigns?: string[];
+  facebookObjectiveIdentifier?: EFacebookObjectiveIdentifier;
+  facebookAdAccount?: string;
+  organizationPathId?: string;
 }
 
 export interface IFacebookObjective {

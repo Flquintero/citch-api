@@ -11,6 +11,7 @@ import { _getFacebookPost } from './helpers/facebook-post-requests';
 import {
   _createMultipleFacebookCampaigns,
   _createFacebookCampaign,
+  _updateMultipleFacebookCampaigns,
   _updateFacebookCampaign,
   _deleteMultipleFacebookCampaigns,
   _deleteFacebookCampaign,
@@ -37,6 +38,7 @@ import {
   FacebookPageLinkedMessage,
   EFacebookObjectiveIdentifier,
   IDBFacebookCampaign,
+  ICreateMultipleCampaignsResponse,
 } from '../../types/modules/facebook';
 // constants
 import { FACEBOOK_URL, FACEBOOK_APP_PAGE_ID } from './helpers/facebook-constants';
@@ -173,7 +175,7 @@ export default {
       const campaign = await FACEBOOK_CAMPAIGNS_DB.doc(id).get();
       // add the below when we add to also get the campaigns from facebook
       // if (includeFacebookCampaign) {
-      //   // include code to get existing campaigns
+      //   // include code to get existing facebook campaigns
       // }
       return campaign.data();
     } catch (error: any) {
@@ -193,7 +195,7 @@ export default {
         next
       );
       const createCampaignPayload: IDBFacebookCampaign = {
-        facebookCampaigns: createdFacebookCampaigns as string[],
+        facebookCampaigns: (createdFacebookCampaigns as ICreateMultipleCampaignsResponse).campaigns,
         facebookObjectiveIdentifier,
         facebookAdAccount: facebookCampaignData.facebookAdAccount,
         organizationPathId: `organizations/${organizationId}`,
@@ -208,7 +210,8 @@ export default {
     try {
       const { campaignData, savedFacebookCampaign } = req.body;
       const { facebookCampaigns } = savedFacebookCampaign;
-      // Is the new or saved campaign citch_reach ?
+      const { facebookObjectiveValues, facebookObjectiveIdentifier, ...facebookCampaignData } = campaignData;
+      // Is the new or saved campaign citch_reach
       const isNewCampaignCitchReach =
         campaignData.facebookObjectiveIdentifier === EFacebookObjectiveIdentifier.citch_reach;
       const isSavedCampaignCitchReach =
@@ -217,17 +220,17 @@ export default {
       // It can also be generic and look for multiple values instead of just citch_reach
       if (isNewCampaignCitchReach || isSavedCampaignCitchReach) {
         await _deleteMultipleFacebookCampaigns({ facebookCampaigns }, next);
+        const createdFacebookCampaigns = (await _createMultipleFacebookCampaigns(
+          {
+            facebookObjectiveValues,
+            facebookCampaignData,
+          },
+          next
+        )) as ICreateMultipleCampaignsResponse;
+        req.body.campaignData.facebookCampaigns = createdFacebookCampaigns.campaigns;
+        req.body.campaignData.facebookAdAccount = createdFacebookCampaigns.facebookAdAccount;
       } else {
-        // create multiple update for code below
-        campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
-        await Promise.all(
-          savedFacebookCampaign.facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
-            campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
-            await _updateFacebookCampaign({ campaignData }, next);
-          })
-        );
-        // create multiple update for code above
-        //await _updateMultipleFacebookCampaigns({ campaignData, savedFacebookCampaign }, next);
+        await _updateMultipleFacebookCampaigns({ campaignData, facebookCampaigns }, next);
       }
       return await this.updateCampaign(req, next);
     } catch (error: any) {
@@ -246,18 +249,11 @@ export default {
   },
   updateCampaign: async function (req: Request, next: NextFunction) {
     try {
-      const { campaignData, savedFacebookCampaign } = req.body;
-      // delete below ?
-      await Promise.all(
-        savedFacebookCampaign.facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
-          campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
-          await _updateFacebookCampaign({ campaignData }, next);
-        })
-      );
-      // delete above ?
-      const updatedFacebookDBCampaign = await FACEBOOK_CAMPAIGNS_DB.doc(campaignData.campaignId).update(
+      const { campaignData } = req.body;
+      const { campaignId, ...updateData } = campaignData;
+      const updatedFacebookDBCampaign = await FACEBOOK_CAMPAIGNS_DB.doc(campaignId).update(
         await _getupdateDBFacebookCampaignPayload({
-          facebookObjectiveIdentifier: campaignData.facebookObjectiveIdentifier,
+          updateData,
         })
       );
       return updatedFacebookDBCampaign;

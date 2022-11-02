@@ -1,6 +1,6 @@
 import { FieldValue } from '../../../config/firebase';
 import { $toDocReference } from '../../../utils/firebase/firestorm/firebase-firestorm-helpers';
-import { EFacebookObjectives, IDBFacebookCampaign } from '../../../types/modules/facebook';
+import { IDBFacebookCampaign } from '../../../types/modules/facebook';
 
 let _getCreateDBFacebookCampaignPayload = async (options: IDBFacebookCampaign) => {
   const { organizationPathId, ...createData } = options;
@@ -11,10 +11,10 @@ let _getCreateDBFacebookCampaignPayload = async (options: IDBFacebookCampaign) =
     updatedOn: FieldValue.serverTimestamp(),
   };
 };
-let _getupdateDBFacebookCampaignPayload = async (options: { facebookObjectiveIdentifier: EFacebookObjectives }) => {
-  const { facebookObjectiveIdentifier } = options;
+let _getupdateDBFacebookCampaignPayload = async (options: { updateData: IDBFacebookCampaign }) => {
+  const { updateData } = options;
   return {
-    facebookObjectiveIdentifier,
+    ...updateData,
     updatedOn: FieldValue.serverTimestamp(),
   };
 };
