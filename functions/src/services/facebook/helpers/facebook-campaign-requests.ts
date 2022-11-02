@@ -5,7 +5,7 @@ import { _chooseFromAvailableAdAccounts } from '../helpers/generic';
 
 // types
 import { NextFunction } from 'express';
-import { IFacebookCampaignData } from '../../../types/modules/facebook';
+import { IFacebookCampaignData, ICreateCampaignResponse } from '../../../types/modules/facebook';
 
 // constants
 import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } from './facebook-constants';
@@ -13,12 +13,17 @@ import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } 
 export async function _createFacebookCampaign(
   options: { facebookCampaignData: IFacebookCampaignData },
   next: NextFunction
-) {
+): Promise<ICreateCampaignResponse | void> {
   try {
     const { facebookCampaignData } = options;
-    return await $apiRequest({
+    const { facebookAdAccount } = facebookCampaignData; // saved Ad account from first campaign i.e citch_reach
+    // We need to reuse ad account if using citch_reach to save both campaigns in same place
+    console.log('facebookCampaignData', facebookCampaignData.objective);
+    console.log('facebookAdAccount', facebookAdAccount);
+    const currentFacebookAdAccount = facebookAdAccount ? facebookAdAccount : await _chooseFromAvailableAdAccounts();
+    const campaign = await $apiRequest({
       method: 'post',
-      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/act_${await _chooseFromAvailableAdAccounts()}/campaigns`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/act_${currentFacebookAdAccount}/campaigns`,
       data: {
         ...facebookCampaignData, // needs to match all the user generated params that facebook takes see https://developers.facebook.com/docs/marketing-apis/get-started
         status: 'PAUSED',
@@ -26,6 +31,10 @@ export async function _createFacebookCampaign(
         access_token: FACEBOOK_SYSTEM_USER_TOKEN,
       },
     });
+    return {
+      facebookAdAccount: currentFacebookAdAccount,
+      campaign,
+    };
   } catch (error: any) {
     console.log('Error Facebook Create Campaign', error);
     return next(await $facebookErrorHandler(error));
@@ -35,10 +44,16 @@ export async function _createFacebookCampaign(
 export async function _updateFacebookCampaign(options: { campaignData: IFacebookCampaignData }, next: NextFunction) {
   try {
     const { campaignData } = options;
-    const { campaignId, ...updateContent } = campaignData;
+    const {
+      campaignId,
+      savedFacebookCampaignId,
+      facebookObjectiveIdentifier,
+      facebookObjectiveValues,
+      ...updateContent
+    } = campaignData;
     return await $apiRequest({
       method: 'post',
-      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${campaignId}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${savedFacebookCampaignId}`,
       data: {
         access_token: FACEBOOK_SYSTEM_USER_TOKEN,
         ...updateContent, // needs to match all the user generated params that facebook takes see https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#Updating
@@ -46,6 +61,21 @@ export async function _updateFacebookCampaign(options: { campaignData: IFacebook
     });
   } catch (error: any) {
     console.log('Error Facebook Update Campaign', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+export async function _deleteFacebookCampaign(options: { campaignId: string }, next: NextFunction) {
+  try {
+    const { campaignId } = options;
+    return await $apiRequest({
+      method: 'delete',
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${campaignId}`,
+      data: {
+        access_token: FACEBOOK_SYSTEM_USER_TOKEN,
+      },
+    });
+  } catch (error: any) {
+    console.log('Error Facebook Delete Campaign', error);
     return next(await $facebookErrorHandler(error));
   }
 }

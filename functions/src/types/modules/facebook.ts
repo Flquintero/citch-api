@@ -37,6 +37,18 @@ export interface IFacebookCampaignData {
   [property: string]: any;
 }
 
+export interface ICreateCampaignResponse {
+  campaign: IFacebookCampaignData;
+  facebookAdAccount: string;
+}
+
+export interface IDBFacebookCampaign {
+  facebookCampaigns: IFacebookCampaignData[];
+  facebookObjectiveIdentifier: EFacebookObjectives;
+  facebookAdAccount: string;
+  organizationPathId: string;
+}
+
 export enum FacebookPageLinkedMessage {
   already_linked = 'Page Already Connected',
   link_success = 'Page Connection Success',

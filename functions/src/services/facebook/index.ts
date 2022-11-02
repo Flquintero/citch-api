@@ -1,5 +1,5 @@
 // helpers
-import { $facebookErrorHandler } from '../../utils/error-handler';
+import { $facebookErrorHandler, $firestormErrorHandler } from '../../utils/error-handler';
 import { getRandomHash } from '../../utils/auth-state-hash-creator';
 import {
   _authUserData,
@@ -8,7 +8,11 @@ import {
   _userAccessToken,
 } from './helpers/facebook-user-auth-handler';
 import { _getFacebookPost } from './helpers/facebook-post-requests';
-import { _createFacebookCampaign, _updateFacebookCampaign } from './helpers/facebook-campaign-requests';
+import {
+  _createFacebookCampaign,
+  _updateFacebookCampaign,
+  _deleteFacebookCampaign,
+} from './helpers/facebook-campaign-requests';
 import {
   _getFacebookPage,
   _checkPageLinkedToAppBusinessManager,
@@ -23,11 +27,15 @@ import { _getCreateDBFacebookCampaignPayload, _getupdateDBFacebookCampaignPayloa
 import organizationsService from '../../services/organizations';
 // types
 import { NextFunction, Request } from 'express';
+import { IReadObject } from '../../types/general/services';
 import {
   FacebookConnectionStatus,
   IFacebookPage,
   FacebookPageLinkedStatus,
   FacebookPageLinkedMessage,
+  EFacebookObjectives,
+  ICreateCampaignResponse,
+  IDBFacebookCampaign,
 } from '../../types/modules/facebook';
 // constants
 import { FACEBOOK_URL, FACEBOOK_APP_PAGE_ID } from './helpers/facebook-constants';
@@ -158,58 +166,104 @@ export default {
       return next(await $facebookErrorHandler(error));
     }
   },
-  createCampaign: async function (req: Request, next: NextFunction) {
+  getCampaign: async function (options: IReadObject, next: NextFunction) {
+    try {
+      const { id } = options;
+      const campaign = await FACEBOOK_CAMPAIGNS_DB.doc(id).get();
+      // add the below when we add to also get the campaigns from facebook
+      // if (includeFacebookCampaign) {
+      //   // include code to get existing campaigns
+      // }
+      return campaign.data();
+    } catch (error: any) {
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  saveCampaignObjective: async function (req: Request, next: NextFunction) {
     try {
       const { campaignData, organizationId } = req.body;
       const { facebookObjectiveValues, facebookObjectiveIdentifier, ...facebookCampaignData } = campaignData;
       const createdFacebookCampaigns = await Promise.all(
         facebookObjectiveValues.map(async (facebookObjectiveValue: string) => {
           facebookCampaignData.objective = facebookObjectiveValue;
-          const savedFacebookCampaign = await _createFacebookCampaign({ facebookCampaignData }, next);
-          return savedFacebookCampaign.id;
+          const savedFacebookCampaignObject = await _createFacebookCampaign({ facebookCampaignData }, next);
+          console.log('savedFacebookCampaignObject', savedFacebookCampaignObject);
+          facebookCampaignData.facebookAdAccount = (
+            savedFacebookCampaignObject as ICreateCampaignResponse
+          ).facebookAdAccount;
+          return (savedFacebookCampaignObject as ICreateCampaignResponse).campaign.id;
         })
       );
-      const savedDBCampaign = await FACEBOOK_CAMPAIGNS_DB.add(
-        await _getCreateDBFacebookCampaignPayload({
-          facebookCampaigns: createdFacebookCampaigns,
-          facebookObjectiveIdentifier,
-          organizationPathId: `organizations/${organizationId}`,
-        })
-      );
-      return savedDBCampaign.id;
+      const createCampaignPayload = {
+        facebookCampaigns: createdFacebookCampaigns,
+        facebookObjectiveIdentifier,
+        facebookAdAccount: facebookCampaignData.facebookAdAccount,
+        organizationPathId: `organizations/${organizationId}`,
+      };
+
+      return await this.createCampaign(createCampaignPayload, next);
+    } catch (error: any) {
+      console.log('Error Facebook/DB Save Objective', error);
+      return next(error);
+    }
+  },
+  updateCampaignObjective: async function (req: Request, next: NextFunction) {
+    try {
+      const { campaignData, savedFacebookCampaign } = req.body;
+      const isNewCampaignCitchReach = campaignData.facebookObjectiveIdentifier === EFacebookObjectives.citch_reach;
+      const isSavedCampaignCitchReach =
+        savedFacebookCampaign.facebookObjectiveIdentifier === EFacebookObjectives.citch_reach;
+      const { facebookCampaigns } = savedFacebookCampaign;
+      if (isNewCampaignCitchReach || isSavedCampaignCitchReach) {
+        Promise.all(
+          facebookCampaigns.forEach(async (campaignId: string) => {
+            await _deleteFacebookCampaign({ campaignId }, next);
+          })
+        );
+        return await this.updateCampaign(req, next);
+      } else {
+        campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
+        await Promise.all(
+          savedFacebookCampaign.facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
+            campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
+            await _updateFacebookCampaign({ campaignData }, next);
+          })
+        );
+        return await this.updateCampaign(req, next);
+      }
+    } catch (error: any) {
+      console.log('Error Facebook/DB Update Objective', error);
+      return next(error);
+    }
+  },
+  createCampaign: async function (options: IDBFacebookCampaign, next: NextFunction) {
+    try {
+      const savedCampaign = await FACEBOOK_CAMPAIGNS_DB.add(await _getCreateDBFacebookCampaignPayload(options));
+      return savedCampaign.id;
     } catch (error: any) {
       console.log('Error Facebook Create Campaign', error);
       return next(await $facebookErrorHandler(error));
     }
   },
   updateCampaign: async function (req: Request, next: NextFunction) {
-    // include middleware that gets campaign from facebook ?
-    // include helper that deletes campaigns if either original or target is citch reach and just create new ones
-    // then change name and objective value then change identifier in DB ( maybe replace campaign values)
-    // pseudo code above ^^^^^^^^^^^^^^
-    // try {
-    //   const { campaignData } = req.body;
-    //   const { campaignIds, facebookObjectiveIdentifier, ...facebookCampaignData } = campaignData;
-    //   const updatedFacebookcampaigns = await Promise.all(
-    //     campaignIds.map(async (campaignId: string) => {
-    //       // check to see if original is citch reach if so disable both campaigns and create new one
-    //       // check to see if new one is citch reach, if so delete original and create the ones for citch reach
-    //       facebookCampaignData.objective = facebookObjectiveValues[0]; // Need to make this use the values list to create multiple campaigns for the citch_reach
-    //       const savedFacebookCampaign = await _updateFacebookCampaign({ facebookCampaignData }, next);
-    //       return savedFacebookCampaign.id;
-    //     })
-    //   );
-    //   await FACEBOOK_CAMPAIGNS_DB.add(
-    //     await _getupdateDBFacebookCampaignPayload({
-    //       facebookCampaigns: updatedFacebookcampaigns,
-    //       facebookObjectiveIdentifier: campaignData.facebookObjectiveIdentifier,
-    //     })
-    //   );
-    //   return updatedFacebookcampaigns;
-    // } catch (error: any) {
-    //   console.log('Error Facebook Create Campaign', error);
-    //   return next(await $facebookErrorHandler(error));
-    // }
+    try {
+      const { campaignData, savedFacebookCampaign } = req.body;
+      await Promise.all(
+        savedFacebookCampaign.facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
+          campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
+          await _updateFacebookCampaign({ campaignData }, next);
+        })
+      );
+      const updatedFacebookDBCampaign = await FACEBOOK_CAMPAIGNS_DB.doc(campaignData.campaignId).update(
+        await _getupdateDBFacebookCampaignPayload({
+          facebookObjectiveIdentifier: campaignData.facebookObjectiveIdentifier,
+        })
+      );
+      return updatedFacebookDBCampaign;
+    } catch (error: any) {
+      console.log('Error Facebook Update Campaign', error);
+      return next(await $facebookErrorHandler(error));
+    }
   },
   linkUserAccounts: async function (req: Request, next: NextFunction) {
     try {

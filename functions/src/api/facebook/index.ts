@@ -4,6 +4,7 @@ import { $idTokenVerification } from '../../middleware/firebase/user-token/fireb
 import { $getUserOrganization } from '../../middleware/organizations/fetch-user-organization';
 import { $getFacebookPage } from '../../middleware/facebook/fetch-user-facebook-page';
 import { $getFacebookPost } from '../../middleware/facebook/fetch-user-facebook-post';
+import { $getDBFacebookCampaign } from '../../middleware/facebook/fetch-db-facebook-campaign';
 // services
 import facebookService from '../../services/facebook';
 import organizationService from '../../services/organizations';
@@ -60,13 +61,7 @@ facebookRouter.post(
 
 facebookRouter.post(
   '/confirm-accounts',
-  [
-    $appCheckVerification,
-    $idTokenVerification,
-    $getUserOrganization,
-    $getFacebookPage,
-    $getFacebookPost,
-  ],
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getFacebookPage, $getFacebookPost],
   async (req: Request, res: Response, next: NextFunction) => {
     const connectedStatusMessage = await facebookService.linkUserAccounts(req, next);
     const postId = req.body.facebookPostData?.id;
@@ -84,9 +79,25 @@ facebookRouter.post(
 
 facebookRouter.put(
   '/update-campaign',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getDBFacebookCampaign],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await facebookService.updateCampaign(req, next));
+  }
+);
+
+facebookRouter.post(
+  '/save-campaign-objective',
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.saveCampaignObjective(req, next));
+  }
+);
+
+facebookRouter.put(
+  '/update-campaign-objective',
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getDBFacebookCampaign],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.updateCampaignObjective(req, next));
   }
 );
 
