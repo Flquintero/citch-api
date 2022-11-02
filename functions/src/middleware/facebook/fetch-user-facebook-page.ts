@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { _getFacebookPage } from '../../services/facebook/helpers/facebook-page-requests';
+import { _getFacebookPage } from '../../services/facebook/pages/helpers/facebook-page-requests';
 import { $facebookErrorHandler } from '../../utils/error-handler';
 
 let $getFacebookPage = async function (req: Request, res: Response, next: NextFunction) {

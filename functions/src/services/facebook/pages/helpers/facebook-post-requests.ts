@@ -1,13 +1,13 @@
 // helpers
-import { $apiRequest } from '../../../utils/https-call';
-import { $facebookErrorHandler } from '../../../utils/error-handler';
-import { $stringifyParams } from '../../../utils/stringify-params';
+import { $apiRequest } from '../../../../utils/https-call';
+import { $facebookErrorHandler } from '../../../../utils/error-handler';
+import { $stringifyParams } from '../../../../utils/stringify-params';
 
 // types
 import { NextFunction } from 'express';
 
 // constants
-import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION } from './facebook-constants';
+import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION } from '../../helpers/facebook-constants';
 
 export async function _getFacebookPost(
   options: { postId: string; access_token: string; fields: string },

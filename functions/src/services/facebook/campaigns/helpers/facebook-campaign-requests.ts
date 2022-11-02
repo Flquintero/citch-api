@@ -1,7 +1,7 @@
 // helpers
-import { $apiRequest } from '../../../utils/https-call';
-import { $facebookErrorHandler } from '../../../utils/error-handler';
-import { _chooseFromAvailableAdAccounts } from '../helpers/generic';
+import { $apiRequest } from '../../../../utils/https-call';
+import { $facebookErrorHandler } from '../../../../utils/error-handler';
+import { _chooseFromAvailableAdAccounts } from '../../helpers/generic';
 
 // types
 import { NextFunction } from 'express';
@@ -10,10 +10,10 @@ import {
   ICreateCampaignResponse,
   ICreateMultipleCampaignsResponse,
   EFacebookObjectiveValue,
-} from '../../../types/modules/facebook';
+} from '../../../../types/modules/facebook';
 
 // constants
-import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } from './facebook-constants';
+import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } from '../../helpers/facebook-constants';
 
 // To Do: Maybe do batch requests?
 export async function _createMultipleFacebookCampaigns(

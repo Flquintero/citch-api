@@ -1,5 +1,5 @@
 // helpers
-import { _getFacebookPost } from '../../services/facebook/helpers/facebook-post-requests';
+import { _getFacebookPost } from '../../services/facebook/pages/helpers/facebook-post-requests';
 import { $facebookErrorHandler } from '../../utils/error-handler';
 //types
 import { Request, Response, NextFunction } from 'express';

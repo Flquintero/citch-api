@@ -1,13 +1,13 @@
 // helpers
-import { $apiRequest } from '../../../utils/https-call';
-import { $facebookErrorHandler } from '../../../utils/error-handler';
-import { $stringifyParams } from '../../../utils/stringify-params';
+import { $apiRequest } from '../../../../utils/https-call';
+import { $facebookErrorHandler } from '../../../../utils/error-handler';
+import { $stringifyParams } from '../../../../utils/stringify-params';
 
 // types
 import { NextFunction } from 'express';
 
 //constants
-import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION } from './facebook-constants';
+import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION } from '../../helpers/facebook-constants';
 
 export async function _authUserData(code: string, next: NextFunction) {
   try {
@@ -54,11 +54,7 @@ export async function _longLivedUserAccessToken(userAccessToken: string, next: N
     return next(await $facebookErrorHandler(error));
   }
 }
-export async function _userAccessToken(
-  userLongLivedAccessToken: string,
-  appAccessToken: string,
-  next: NextFunction
-) {
+export async function _userAccessToken(userLongLivedAccessToken: string, appAccessToken: string, next: NextFunction) {
   try {
     const stringifiedParams = await $stringifyParams({
       input_token: userLongLivedAccessToken,

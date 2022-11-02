@@ -5,7 +5,7 @@ let $getDBFacebookCampaign = async function (req: Request, res: Response, next: 
   try {
     const { campaignData } = req.body;
     const { campaignId } = campaignData;
-    const campaign = await facebookService.getCampaign({ id: campaignId }, next);
+    const campaign = await facebookService.campaigns.getCampaign({ id: campaignId }, next);
     req.body.savedFacebookCampaign = campaign;
     next();
   } catch (error: any) {

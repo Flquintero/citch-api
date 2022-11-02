@@ -17,7 +17,7 @@ facebookRouter.get(
   '/check-user-credentials',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.checkUserToken(req, next));
+    res.json(await facebookService.auth.checkUserAuthToken(req, next));
   }
 );
 
@@ -25,7 +25,7 @@ facebookRouter.get(
   '/consent-url',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.getFacebookConsentUrl(req, next));
+    res.json(await facebookService.auth.getFacebookConsentUrl(req, next));
   }
 );
 
@@ -33,7 +33,7 @@ facebookRouter.get(
   `/post-page/:postId`,
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.getPostPage(req, next));
+    res.json(await facebookService.pages.getPostPage(req, next));
   }
 );
 
@@ -41,7 +41,7 @@ facebookRouter.get(
   `/user-pages`,
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.getUserPages(req, next));
+    res.json(await facebookService.pages.getUserPages(req, next));
   }
 );
 
@@ -49,7 +49,7 @@ facebookRouter.post(
   '/save-user',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    const facebookUserData = await facebookService.getUserData(req.body.code, next);
+    const facebookUserData = await facebookService.auth.getUserAuthData(req.body.code, next);
     const updateObject = {
       pathId: `organizations/${req.body.organizationId}`,
       updateData: { ...facebookUserData },
@@ -63,7 +63,7 @@ facebookRouter.post(
   '/confirm-accounts',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getFacebookPage, $getFacebookPost],
   async (req: Request, res: Response, next: NextFunction) => {
-    const connectedStatusMessage = await facebookService.linkUserAccounts(req, next);
+    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(req, next);
     const postId = req.body.facebookPostData?.id;
     res.json({ status: connectedStatusMessage, ...(postId ? { postId: postId } : null) });
   }
@@ -73,7 +73,7 @@ facebookRouter.post(
   '/save-campaign-objective',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.saveCampaignObjective(req, next));
+    res.json(await facebookService.campaigns.saveCampaignObjective(req, next));
   }
 );
 
@@ -81,7 +81,7 @@ facebookRouter.put(
   '/update-campaign-objective',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getDBFacebookCampaign],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.updateCampaignObjective(req, next));
+    res.json(await facebookService.campaigns.updateCampaignObjective(req, next));
   }
 );
 

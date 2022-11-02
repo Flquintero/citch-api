@@ -1,7 +1,7 @@
 // helpers
-import { $apiRequest } from '../../../utils/https-call';
-import { $facebookErrorHandler } from '../../../utils/error-handler';
-import { $stringifyParams } from '../../../utils/stringify-params';
+import { $apiRequest } from '../../../../utils/https-call';
+import { $facebookErrorHandler } from '../../../../utils/error-handler';
+import { $stringifyParams } from '../../../../utils/stringify-params';
 
 // types
 import { NextFunction } from 'express';
@@ -10,7 +10,7 @@ import {
   IFacebookPageCheckInListOfPagesData,
   IFacebookPageLinkedStatus,
   FacebookPageLinkedStatus,
-} from '../../../types/modules/facebook';
+} from '../../../../types/modules/facebook';
 
 //constants
 import {
@@ -19,7 +19,7 @@ import {
   FACEBOOK_BUSINESS_ID,
   FACEBOOK_SYSTEM_USER_TOKEN,
   FACEBOOK_API_VERSION,
-} from './facebook-constants';
+} from '../../helpers/facebook-constants';
 
 export async function _getFacebookPage(
   options: { pageId: string; access_token: string; fields: string },
@@ -83,10 +83,7 @@ export async function _checkPageLinkedToAppBusinessManager(
     return next(await $facebookErrorHandler(error));
   }
 }
-export async function _getLinkedPagesToAppBusinessManager(
-  options: { pageLimit: number },
-  next: NextFunction
-) {
+export async function _getLinkedPagesToAppBusinessManager(options: { pageLimit: number }, next: NextFunction) {
   try {
     const { pageLimit } = options;
     const stringifiedParams = await $stringifyParams({
