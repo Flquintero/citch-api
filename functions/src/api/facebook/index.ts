@@ -70,22 +70,6 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
-  '/create-campaign',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
-  async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.createCampaign(req, next));
-  }
-);
-
-facebookRouter.put(
-  '/update-campaign',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getDBFacebookCampaign],
-  async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.updateCampaign(req, next));
-  }
-);
-
-facebookRouter.post(
   '/save-campaign-objective',
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {

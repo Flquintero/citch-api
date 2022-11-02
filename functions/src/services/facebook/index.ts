@@ -9,8 +9,10 @@ import {
 } from './helpers/facebook-user-auth-handler';
 import { _getFacebookPost } from './helpers/facebook-post-requests';
 import {
+  _createMultipleFacebookCampaigns,
   _createFacebookCampaign,
   _updateFacebookCampaign,
+  _deleteMultipleFacebookCampaigns,
   _deleteFacebookCampaign,
 } from './helpers/facebook-campaign-requests';
 import {
@@ -33,8 +35,7 @@ import {
   IFacebookPage,
   FacebookPageLinkedStatus,
   FacebookPageLinkedMessage,
-  EFacebookObjectives,
-  ICreateCampaignResponse,
+  EFacebookObjectiveIdentifier,
   IDBFacebookCampaign,
 } from '../../types/modules/facebook';
 // constants
@@ -183,24 +184,20 @@ export default {
     try {
       const { campaignData, organizationId } = req.body;
       const { facebookObjectiveValues, facebookObjectiveIdentifier, ...facebookCampaignData } = campaignData;
-      const createdFacebookCampaigns = await Promise.all(
-        facebookObjectiveValues.map(async (facebookObjectiveValue: string) => {
-          facebookCampaignData.objective = facebookObjectiveValue;
-          const savedFacebookCampaignObject = await _createFacebookCampaign({ facebookCampaignData }, next);
-          console.log('savedFacebookCampaignObject', savedFacebookCampaignObject);
-          facebookCampaignData.facebookAdAccount = (
-            savedFacebookCampaignObject as ICreateCampaignResponse
-          ).facebookAdAccount;
-          return (savedFacebookCampaignObject as ICreateCampaignResponse).campaign.id;
-        })
+      // We always start with creating a campaign because an objective is the first thing we do
+      const createdFacebookCampaigns = await _createMultipleFacebookCampaigns(
+        {
+          facebookObjectiveValues,
+          facebookCampaignData,
+        },
+        next
       );
-      const createCampaignPayload = {
-        facebookCampaigns: createdFacebookCampaigns,
+      const createCampaignPayload: IDBFacebookCampaign = {
+        facebookCampaigns: createdFacebookCampaigns as string[],
         facebookObjectiveIdentifier,
         facebookAdAccount: facebookCampaignData.facebookAdAccount,
         organizationPathId: `organizations/${organizationId}`,
       };
-
       return await this.createCampaign(createCampaignPayload, next);
     } catch (error: any) {
       console.log('Error Facebook/DB Save Objective', error);
@@ -210,18 +207,18 @@ export default {
   updateCampaignObjective: async function (req: Request, next: NextFunction) {
     try {
       const { campaignData, savedFacebookCampaign } = req.body;
-      const isNewCampaignCitchReach = campaignData.facebookObjectiveIdentifier === EFacebookObjectives.citch_reach;
-      const isSavedCampaignCitchReach =
-        savedFacebookCampaign.facebookObjectiveIdentifier === EFacebookObjectives.citch_reach;
       const { facebookCampaigns } = savedFacebookCampaign;
+      // Is the new or saved campaign citch_reach ?
+      const isNewCampaignCitchReach =
+        campaignData.facebookObjectiveIdentifier === EFacebookObjectiveIdentifier.citch_reach;
+      const isSavedCampaignCitchReach =
+        savedFacebookCampaign.facebookObjectiveIdentifier === EFacebookObjectiveIdentifier.citch_reach;
+      // if citch_reach then we delete the saved one and just create a new one on facebook but update the DB
+      // It can also be generic and look for multiple values instead of just citch_reach
       if (isNewCampaignCitchReach || isSavedCampaignCitchReach) {
-        Promise.all(
-          facebookCampaigns.forEach(async (campaignId: string) => {
-            await _deleteFacebookCampaign({ campaignId }, next);
-          })
-        );
-        return await this.updateCampaign(req, next);
+        await _deleteMultipleFacebookCampaigns({ facebookCampaigns }, next);
       } else {
+        // create multiple update for code below
         campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
         await Promise.all(
           savedFacebookCampaign.facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
@@ -229,8 +226,10 @@ export default {
             await _updateFacebookCampaign({ campaignData }, next);
           })
         );
-        return await this.updateCampaign(req, next);
+        // create multiple update for code above
+        //await _updateMultipleFacebookCampaigns({ campaignData, savedFacebookCampaign }, next);
       }
+      return await this.updateCampaign(req, next);
     } catch (error: any) {
       console.log('Error Facebook/DB Update Objective', error);
       return next(error);
@@ -248,12 +247,14 @@ export default {
   updateCampaign: async function (req: Request, next: NextFunction) {
     try {
       const { campaignData, savedFacebookCampaign } = req.body;
+      // delete below ?
       await Promise.all(
         savedFacebookCampaign.facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
           campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
           await _updateFacebookCampaign({ campaignData }, next);
         })
       );
+      // delete above ?
       const updatedFacebookDBCampaign = await FACEBOOK_CAMPAIGNS_DB.doc(campaignData.campaignId).update(
         await _getupdateDBFacebookCampaignPayload({
           facebookObjectiveIdentifier: campaignData.facebookObjectiveIdentifier,

@@ -5,10 +5,33 @@ import { _chooseFromAvailableAdAccounts } from '../helpers/generic';
 
 // types
 import { NextFunction } from 'express';
-import { IFacebookCampaignData, ICreateCampaignResponse } from '../../../types/modules/facebook';
+import {
+  IFacebookCampaignData,
+  ICreateCampaignResponse,
+  EFacebookObjectiveValue,
+} from '../../../types/modules/facebook';
 
 // constants
 import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } from './facebook-constants';
+
+// To Do: Maybe do batch requests?
+export async function _createMultipleFacebookCampaigns(
+  options: { facebookObjectiveValues: EFacebookObjectiveValue[]; facebookCampaignData: IFacebookCampaignData },
+  next: NextFunction
+): Promise<string[]> {
+  const { facebookObjectiveValues, facebookCampaignData } = options;
+  const createCampaignsArray = await Promise.all(
+    facebookObjectiveValues.map(async (facebookObjectiveValue: EFacebookObjectiveValue) => {
+      facebookCampaignData.objective = facebookObjectiveValue;
+      const savedFacebookCampaignObject = await _createFacebookCampaign({ facebookCampaignData }, next);
+      facebookCampaignData.facebookAdAccount = (
+        savedFacebookCampaignObject as ICreateCampaignResponse
+      ).facebookAdAccount;
+      return (savedFacebookCampaignObject as ICreateCampaignResponse).campaign.id;
+    })
+  );
+  return createCampaignsArray as string[];
+}
 
 export async function _createFacebookCampaign(
   options: { facebookCampaignData: IFacebookCampaignData },
@@ -78,4 +101,16 @@ export async function _deleteFacebookCampaign(options: { campaignId: string }, n
     console.log('Error Facebook Delete Campaign', error);
     return next(await $facebookErrorHandler(error));
   }
+}
+
+export async function _deleteMultipleFacebookCampaigns(
+  options: { facebookCampaigns: string[] },
+  next: NextFunction
+): Promise<boolean[]> {
+  const { facebookCampaigns } = options;
+  return await Promise.all(
+    facebookCampaigns.map(async (campaignId: string) => {
+      return await _deleteFacebookCampaign({ campaignId }, next);
+    })
+  );
 }
