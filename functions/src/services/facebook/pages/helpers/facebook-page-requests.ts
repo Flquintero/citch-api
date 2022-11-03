@@ -9,8 +9,8 @@ import {
   IFacebookPage,
   IFacebookPageCheckInListOfPagesData,
   IFacebookPageLinkedStatus,
-  FacebookPageLinkedStatus,
-} from '../../../../types/modules/facebook';
+} from '../../../../types/modules/facebook/pages/interfaces';
+import { EFacebookPageLinkedStatus } from '../../../../types/modules/facebook/pages/enums';
 
 //constants
 import {
@@ -233,11 +233,11 @@ async function __checkForChosenPageinListOfPages(
         return __checkForChosenPageinListOfPages(searchData, next);
         //if no other page available return that we didnt find it
       } else {
-        return { status: FacebookPageLinkedStatus.not_linked };
+        return { status: EFacebookPageLinkedStatus.not_linked };
       }
       // if finds it on current page
     } else {
-      return { status: FacebookPageLinkedStatus.linked };
+      return { status: EFacebookPageLinkedStatus.linked };
     }
   } catch (error: any) {
     console.log('Error Checking Page is in List', error);

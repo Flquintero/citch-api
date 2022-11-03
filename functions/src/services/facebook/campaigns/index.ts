@@ -17,10 +17,10 @@ import {
 
 // Types
 import {
-  EFacebookObjectiveIdentifier,
   IDBFacebookCampaign,
   ICreateMultipleCampaignsResponse,
-} from '../../../types/modules/facebook';
+} from '../../../types/modules/facebook/campaigns/interfaces';
+import { EFacebookObjectiveIdentifier } from '../../../types/modules/facebook/campaigns/enums';
 import { IReadObject } from '../../../types/general/services';
 import { NextFunction, Request } from 'express';
 

@@ -9,8 +9,8 @@ import {
   IFacebookCampaignData,
   ICreateCampaignResponse,
   ICreateMultipleCampaignsResponse,
-  EFacebookObjectiveValue,
-} from '../../../../types/modules/facebook';
+} from '../../../../types/modules/facebook/campaigns/interfaces';
+import { EFacebookObjectiveValue } from '../../../../types/modules/facebook/campaigns/enums';
 
 // constants
 import { FACEBOOK_GRAPH_URL, FACEBOOK_API_VERSION, FACEBOOK_SYSTEM_USER_TOKEN } from '../../helpers/facebook-constants';

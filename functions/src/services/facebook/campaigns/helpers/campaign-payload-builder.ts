@@ -1,6 +1,6 @@
 import { FieldValue } from '../../../../config/firebase';
 import { $toDocReference } from '../../../../utils/firebase/firestorm/firebase-firestorm-helpers';
-import { IDBFacebookCampaign } from '../../../../types/modules/facebook';
+import { IDBFacebookCampaign } from '../../../../types/modules/facebook/campaigns/interfaces';
 
 let _getCreateDBFacebookCampaignPayload = async (options: IDBFacebookCampaign) => {
   const { organizationPathId, ...createData } = options;

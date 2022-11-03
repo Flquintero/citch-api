@@ -16,7 +16,7 @@ import {
 
 // Types
 import { NextFunction, Request } from 'express';
-import { FacebookConnectionStatus } from '../../../types/modules/facebook';
+import { EFacebookConnectionStatus } from '../../../types/modules/facebook/auth/enums';
 
 // Constants
 import { FACEBOOK_URL } from '../helpers/facebook-constants';
@@ -90,7 +90,7 @@ export default {
     try {
       const { organizationId, organization } = req.body;
       if (!organization.facebookData || organization.facebookData === null) {
-        return { status: FacebookConnectionStatus.disconnected };
+        return { status: EFacebookConnectionStatus.disconnected };
       } else {
         const appAccessTokenData = await _appAccessToken(next);
         const userAccessTokenData = await _userAccessToken(
@@ -99,7 +99,7 @@ export default {
           next
         );
         if (userAccessTokenData.is_valid) {
-          return { status: FacebookConnectionStatus.connected };
+          return { status: EFacebookConnectionStatus.connected };
           // maybe the below should be decoupled but i feel its part of the functionality that if its invalid cut the bs and make them reconnect
         } else {
           const updateObject = {
@@ -108,7 +108,7 @@ export default {
           };
           await organizationsService.update(updateObject, next);
           return {
-            status: FacebookConnectionStatus.expired,
+            status: EFacebookConnectionStatus.expired,
             message: 'Token has expired. Please Reconnect Again',
           };
         }
