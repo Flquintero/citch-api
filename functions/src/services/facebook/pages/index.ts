@@ -14,12 +14,13 @@ import { _getFacebookPost } from './helpers/facebook-post-requests';
 
 // Types
 import { NextFunction, Request } from 'express';
-import { IFacebookPage, FacebookPageLinkedStatus, FacebookPageLinkedMessage } from '../../../types/modules/facebook';
+import { IFacebookPage } from '../../../types/modules/facebook/pages/interfaces';
+import { EFacebookPageLinkedStatus, EFacebookPageLinkedMessage } from '../../../types/modules/facebook/pages/enums';
 
 // Constants
 import { FACEBOOK_APP_PAGE_ID } from '../helpers/facebook-constants';
 
-export default {
+export const pages = {
   linkUserAccounts: async function (req: Request, next: NextFunction) {
     try {
       const { facebookPageData } = req.body;
@@ -28,7 +29,7 @@ export default {
 
       // Allow Citch page through, it doesnt list it in options
       if (pageId === FACEBOOK_APP_PAGE_ID) {
-        return FacebookPageLinkedMessage.already_linked;
+        return EFacebookPageLinkedMessage.already_linked;
       }
       // End of Citch hack
 
@@ -37,20 +38,20 @@ export default {
         page_access_token: (facebookPageData as IFacebookPage).access_token as string,
       };
       const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(pageConnectData, next);
-      if (pageLinkedObject?.status === FacebookPageLinkedStatus.not_linked) {
+      if (pageLinkedObject?.status === EFacebookPageLinkedStatus.not_linked) {
         await _connectUserPageToAppBusinessManager({ user_access_token: access_token, pageId }, next);
 
         //CONNECT SYSTEM USER TO PAGE BECAUSE IF WE NEED TO CONNECT TO BIZ MANAGER MEANS PAGE NOT CONNECTED
         await _connectSystemUserToUserPage({ pageId }, next);
-        return FacebookPageLinkedMessage.link_success;
+        return EFacebookPageLinkedMessage.link_success;
       } else {
         //CHECK TO SEE IF SYSTEM USER HAS PAGE IF NOT CONNECT IT (IT SHOULD BE BECAUSE OF THE ABOVE PROCESS)
         const systemUserConnected = await _checkSystemUserConnectedToUserPage({ pageId }, next);
         console.log('systemUserConnected', systemUserConnected);
-        if (systemUserConnected?.status === FacebookPageLinkedStatus.not_linked) {
+        if (systemUserConnected?.status === EFacebookPageLinkedStatus.not_linked) {
           await _connectSystemUserToUserPage({ pageId }, next);
         }
-        return FacebookPageLinkedMessage.already_linked;
+        return EFacebookPageLinkedMessage.already_linked;
       }
     } catch (error: any) {
       console.log('Error Facebook Linking Accounts', error.data);

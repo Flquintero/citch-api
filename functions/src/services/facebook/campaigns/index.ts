@@ -29,7 +29,7 @@ import { db } from '../../../config/firebase';
 const FACEBOOK_CAMPAIGNS_DB = db.collection('facebook_campaigns');
 
 // Methods
-export default {
+export const campaigns = {
   getCampaign: async function (options: IReadObject, next: NextFunction) {
     try {
       const { id } = options;

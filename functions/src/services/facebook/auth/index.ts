@@ -21,7 +21,7 @@ import { EFacebookConnectionStatus } from '../../../types/modules/facebook/auth/
 // Constants
 import { FACEBOOK_URL } from '../helpers/facebook-constants';
 
-export default {
+export const auth = {
   getFacebookConsentUrl: async function (options: Request, next: NextFunction) {
     try {
       const state = $getRandomHash();

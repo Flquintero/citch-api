@@ -3,7 +3,7 @@ import { _getFacebookPost } from '../../services/facebook/pages/helpers/facebook
 import { $facebookErrorHandler } from '../../utils/error-handler';
 //types
 import { Request, Response, NextFunction } from 'express';
-import { IFacebookPage } from '../../types/modules/facebook';
+import { IFacebookPage } from '../../types/modules/facebook/pages/interfaces';
 
 let $getFacebookPost = async function (req: Request, res: Response, next: NextFunction) {
   try {
