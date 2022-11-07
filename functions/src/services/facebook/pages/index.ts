@@ -47,7 +47,6 @@ export const pages = {
       } else {
         //CHECK TO SEE IF SYSTEM USER HAS PAGE IF NOT CONNECT IT (IT SHOULD BE BECAUSE OF THE ABOVE PROCESS)
         const systemUserConnected = await _checkSystemUserConnectedToUserPage({ pageId }, next);
-        console.log('systemUserConnected', systemUserConnected);
         if (systemUserConnected?.status === EFacebookPageLinkedStatus.not_linked) {
           await _connectSystemUserToUserPage({ pageId }, next);
         }

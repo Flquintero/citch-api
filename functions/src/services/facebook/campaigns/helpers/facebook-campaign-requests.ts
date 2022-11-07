@@ -7,6 +7,7 @@ import { _chooseFromAvailableAdAccounts } from '../../helpers/generic';
 import { NextFunction } from 'express';
 import {
   IFacebookCampaignData,
+  IUpdateFacebookCampaignPayload,
   ICreateCampaignResponse,
   ICreateMultipleCampaignsResponse,
 } from '../../../../types/modules/facebook/campaigns/interfaces';
@@ -22,18 +23,27 @@ export async function _createMultipleFacebookCampaigns(
 ): Promise<ICreateMultipleCampaignsResponse | void> {
   try {
     const { facebookObjectiveValues, facebookCampaignData } = options;
+    let multipleCampaignResponse: ICreateMultipleCampaignsResponse = {
+      campaigns: [],
+    };
     const createCampaignsArray = await Promise.all(
       facebookObjectiveValues.map(async (facebookObjectiveValue: EFacebookObjectiveValue) => {
         facebookCampaignData.objective = facebookObjectiveValue;
         const savedFacebookCampaignObject = (await _createFacebookCampaign(
-          { facebookCampaignData },
+          {
+            facebookCampaignData,
+            ...(multipleCampaignResponse.facebookAdAccount
+              ? { facebookAdAccount: multipleCampaignResponse.facebookAdAccount }
+              : null),
+          },
           next
         )) as ICreateCampaignResponse;
-        facebookCampaignData.facebookAdAccount = savedFacebookCampaignObject.facebookAdAccount;
+        multipleCampaignResponse.facebookAdAccount = savedFacebookCampaignObject.facebookAdAccount;
         return savedFacebookCampaignObject.campaign.id;
       })
     );
-    return { facebookAdAccount: facebookCampaignData.facebookAdAccount, campaigns: createCampaignsArray as string[] };
+    multipleCampaignResponse.campaigns = createCampaignsArray as string[];
+    return multipleCampaignResponse;
   } catch (error: any) {
     console.log('Error Facebook  Multiple Campaign', error);
     return next(await $facebookErrorHandler(error));
@@ -41,12 +51,11 @@ export async function _createMultipleFacebookCampaigns(
 }
 
 export async function _createFacebookCampaign(
-  options: { facebookCampaignData: IFacebookCampaignData },
+  options: { facebookCampaignData: IFacebookCampaignData; facebookAdAccount?: string },
   next: NextFunction
 ): Promise<ICreateCampaignResponse | void> {
   try {
-    const { facebookCampaignData } = options;
-    const { facebookAdAccount } = facebookCampaignData; // saved Ad account from first campaign i.e citch_reach
+    const { facebookCampaignData, facebookAdAccount } = options;
     // We need to reuse ad account if using citch_reach to save both campaigns in same place
     const currentFacebookAdAccount = facebookAdAccount ? facebookAdAccount : await _chooseFromAvailableAdAccounts();
     const campaign = await $apiRequest({
@@ -69,38 +78,32 @@ export async function _createFacebookCampaign(
   }
 }
 
-export async function _updateMultipleFacebookCampaigns(
-  options: { campaignData: any; facebookCampaigns: any },
-  next: NextFunction
-): Promise<boolean[] | void> {
-  try {
-    const { campaignData, facebookCampaigns } = options;
-    campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
-    await Promise.all(
-      facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
-        campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
-        await _updateFacebookCampaign({ campaignData }, next);
-      })
-    );
-  } catch (error: any) {
-    console.log('Error Facebook Update Multiple Campaign', error);
-    return next(await $facebookErrorHandler(error));
-  }
-}
+// not being used for now as update only happens if there is only one objective so only one campaign
+// export async function _updateMultipleFacebookCampaigns(
+//   options: { campaignData: any; facebookCampaigns: string[] },
+//   next: NextFunction
+// ): Promise<boolean[] | void> {
+//   try {
+//     const { campaignData, facebookCampaigns } = options;
+//     campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
+//     await Promise.all(
+//       facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
+//         campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
+//         await _updateFacebookCampaign({ campaignData }, next);
+//       })
+//     );
+//   } catch (error: any) {
+//     console.log('Error Facebook Update Multiple Campaign', error);
+//     return next(await $facebookErrorHandler(error));
+//   }
+// }
 
 export async function _updateFacebookCampaign(
-  options: { campaignData: IFacebookCampaignData },
+  updateFacebookCampaignPayload: IUpdateFacebookCampaignPayload,
   next: NextFunction
-): Promise<IFacebookCampaignData | void> {
+): Promise<any | void> {
   try {
-    const { campaignData } = options;
-    const {
-      campaignId,
-      savedFacebookCampaignId,
-      facebookObjectiveIdentifier,
-      facebookObjectiveValues,
-      ...updateContent
-    } = campaignData;
+    const { savedFacebookCampaignId, updateContent } = updateFacebookCampaignPayload;
     return await $apiRequest({
       method: 'post',
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${savedFacebookCampaignId}`,
