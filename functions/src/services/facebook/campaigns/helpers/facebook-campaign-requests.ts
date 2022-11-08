@@ -25,6 +25,7 @@ export async function _createMultipleFacebookCampaigns(
     const { facebookObjectiveValues, facebookCampaignData } = options;
     let multipleCampaignResponse: ICreateMultipleCampaignsResponse = {
       campaigns: [],
+      facebookAdAccount: await _chooseFromAvailableAdAccounts(),
     };
     const createCampaignsArray = await Promise.all(
       facebookObjectiveValues.map(async (facebookObjectiveValue: EFacebookObjectiveValue) => {
@@ -32,13 +33,10 @@ export async function _createMultipleFacebookCampaigns(
         const savedFacebookCampaignObject = (await _createFacebookCampaign(
           {
             facebookCampaignData,
-            ...(multipleCampaignResponse.facebookAdAccount
-              ? { facebookAdAccount: multipleCampaignResponse.facebookAdAccount }
-              : null),
+            facebookAdAccount: multipleCampaignResponse.facebookAdAccount,
           },
           next
         )) as ICreateCampaignResponse;
-        multipleCampaignResponse.facebookAdAccount = savedFacebookCampaignObject.facebookAdAccount;
         return savedFacebookCampaignObject.campaign.id;
       })
     );
