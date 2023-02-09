@@ -1,20 +1,20 @@
 // middleware
-import { $appCheckVerification } from '../../middleware/firebase/app-check/firebase-app-check-verification';
-import { $idTokenVerification } from '../../middleware/firebase/user-token/firebase-user-token-verification';
-import { $getUserOrganization } from '../../middleware/organizations/fetch-user-organization';
-import { $getFacebookPage } from '../../middleware/facebook/fetch-user-facebook-page';
-import { $getFacebookPost } from '../../middleware/facebook/fetch-user-facebook-post';
-import { $getDBFacebookCampaign } from '../../middleware/facebook/fetch-db-facebook-campaign';
+import { $appCheckVerification } from "../../middleware/firebase/app-check/firebase-app-check-verification";
+import { $idTokenVerification } from "../../middleware/firebase/user-token/firebase-user-token-verification";
+import { $getUserOrganization } from "../../middleware/organizations/fetch-user-organization";
+import { $getFacebookPage } from "../../middleware/facebook/fetch-user-facebook-page";
+import { $getFacebookPost } from "../../middleware/facebook/fetch-user-facebook-post";
+import { $getDBFacebookCampaign } from "../../middleware/facebook/fetch-db-facebook-campaign";
 // services
-import facebookService from '../../services/facebook';
-import organizationService from '../../services/organizations';
+import facebookService from "../../services/facebook";
+import organizationService from "../../services/organizations";
 // type
-import { Request, Response, NextFunction, Router } from 'express';
+import { Request, Response, NextFunction, Router } from "express";
 // declarations
 const facebookRouter = Router();
 
 facebookRouter.get(
-  '/check-user-credentials',
+  "/check-user-credentials",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await facebookService.auth.checkUserAuthToken(req, next));
@@ -22,7 +22,7 @@ facebookRouter.get(
 );
 
 facebookRouter.get(
-  '/consent-url',
+  "/consent-url",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await facebookService.auth.getFacebookConsentUrl(req, next));
@@ -46,31 +46,46 @@ facebookRouter.get(
 );
 
 facebookRouter.post(
-  '/save-user',
+  "/save-user",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    const facebookUserData = await facebookService.auth.getUserAuthData(req.body.code, next);
+    const facebookUserData = await facebookService.auth.getUserAuthData(
+      req.body.code,
+      next
+    );
     const updateObject = {
       pathId: `organizations/${req.body.organizationId}`,
       updateData: { ...facebookUserData },
     };
     await organizationService.update(updateObject, next);
-    res.status(200).send('OK');
+    res.status(200).send("OK");
   }
 );
 
 facebookRouter.post(
-  '/confirm-accounts',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getFacebookPage, $getFacebookPost],
+  "/confirm-accounts",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+    $getFacebookPost,
+  ],
   async (req: Request, res: Response, next: NextFunction) => {
-    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(req, next);
+    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(
+      req,
+      next
+    );
     const postId = req.body.facebookPostData?.id;
-    res.json({ status: connectedStatusMessage, ...(postId ? { postId: postId } : null) });
+    res.json({
+      status: connectedStatusMessage,
+      ...(postId ? { postId: postId } : null),
+    });
   }
 );
 
 facebookRouter.post(
-  '/save-campaign-objective',
+  "/save-campaign-objective",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await facebookService.campaigns.saveCampaignObjective(req, next));
@@ -78,15 +93,22 @@ facebookRouter.post(
 );
 
 facebookRouter.put(
-  '/update-campaign-objective',
-  [$appCheckVerification, $idTokenVerification, $getUserOrganization, $getDBFacebookCampaign],
+  "/update-campaign-objective",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.campaigns.updateCampaignObjective(req, next));
+    res.json(
+      await facebookService.campaigns.updateCampaignObjective(req, next)
+    );
   }
 );
 
 facebookRouter.put(
-  '/disconnect-user',
+  "/disconnect-user",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     const updateObject = {
@@ -94,12 +116,20 @@ facebookRouter.put(
       updateData: { facebookData: null },
     };
     await organizationService.update(updateObject, next);
-    res.status(200).send('OK');
+    res.status(200).send("OK");
   }
 );
 
-facebookRouter.get('*', async (req: Request, res: Response) => {
-  res.status(404).send('This route does not exist.');
+facebookRouter.get(
+  "/locations/:locationSearchString",
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.audience.getLocations(req, next));
+  }
+);
+
+facebookRouter.get("*", async (req: Request, res: Response) => {
+  res.status(404).send("This route does not exist.");
 });
 
 module.exports = facebookRouter;
