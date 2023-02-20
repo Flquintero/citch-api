@@ -128,6 +128,14 @@ facebookRouter.get(
   }
 );
 
+facebookRouter.get(
+  "/interests/:interestSearchString",
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.audience.getInterests(req, next));
+  }
+);
+
 facebookRouter.get("*", async (req: Request, res: Response) => {
   res.status(404).send("This route does not exist.");
 });
