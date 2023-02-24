@@ -7,6 +7,8 @@ import {
   _getFacebookInterests,
 } from "./helpers/facebook-audience-requests";
 
+import { _getFacebookCampaign } from "../campaigns/helpers/facebook-campaign-requests";
+
 // Types
 import { NextFunction, Request } from "express";
 
@@ -36,6 +38,21 @@ export const audience = {
       return interestsData.data;
     } catch (error: any) {
       console.log("Error Getting Facebook Locations", error);
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  saveAudience: async function (req: Request, next: NextFunction) {
+    try {
+      console.log("req", req.body);
+      //const { access_token } = req.body.organization.facebookData;
+      // const { facebookTargetingAudience } = req.body.saveCampaignObject;
+      //const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
+      // const adSetData = await _saveFacebookAdSet( <-- TO DO
+      //   { interestSearchString, access_token },
+      //   next
+      // );
+    } catch (error: any) {
+      console.log("Error Saving Audience", error);
       return next(await $facebookErrorHandler(error));
     }
   },

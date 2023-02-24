@@ -4,15 +4,15 @@ import {
   EFacebookObjectiveValue,
   EFacebookObjectiveDisplayName,
   EFacebookObjectiveDescription,
-} from './enums';
+} from "./enums";
 
-import { DocumentData } from 'firebase-admin/firestore';
+import { DocumentData } from "firebase-admin/firestore";
 
 export interface ISaveFacebookCampaignObject {
   campaignId?: string;
   campaignData: {
     name?: string;
-    facebookObjectiveValues?: IFacebookObjective['facebookValues']; // from our set objectives
+    facebookObjectiveValues?: IFacebookObjective["facebookValues"]; // from our set objectives
     facebookObjectiveIdentifier?: EFacebookObjectiveIdentifier; // from our set objectives
   };
 }
@@ -38,6 +38,8 @@ export interface IDBFacebookCampaign extends DocumentData {
   facebookObjectiveIdentifier?: EFacebookObjectiveIdentifier;
   facebookAdAccount?: string;
   organizationPathId?: string;
+  facebookPage?: string;
+  platform?: string;
 }
 export interface IDBUpdateFacebookCampaignPayload {
   campaignId: string;
@@ -55,4 +57,47 @@ export interface IFacebookObjective {
 export interface IUpdateFacebookCampaignPayload {
   savedFacebookCampaignId: string;
   updateContent: IFacebookCampaignData;
+}
+
+export interface IGetFacebookCampaignPayload {
+  savedFacebookCampaignId: string;
+  targetFields: string; // comma separated string
+  access_token: string;
+}
+
+export interface IFacebookAudience {
+  [property: string]:
+    | undefined
+    | string
+    | IFacebookLocation[]
+    | IFacebookInterest[];
+  ageMin?: string;
+  ageMax?: string;
+  gender?: string;
+  chosenLocations?: IFacebookLocation[];
+  chosenInterests?: IFacebookInterest[];
+}
+
+export interface IFacebookLocation {
+  [property: string]: string | boolean | number | undefined;
+  country_code: string;
+  country_name: string;
+  key: string;
+  name: string;
+  region: string;
+  region_id: number;
+  primary_city?: string;
+  supports_city: boolean;
+  supports_region: boolean;
+  type: string;
+}
+
+export interface IFacebookInterest {
+  audience_size_lower_bound: number;
+  audience_size_upper_bound: number;
+  description: string;
+  id: string;
+  name: string;
+  path: string[];
+  topic: string;
 }
