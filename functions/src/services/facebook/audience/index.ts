@@ -6,11 +6,12 @@ import {
   _getFacebookLocations,
   _getFacebookInterests,
 } from "./helpers/facebook-audience-requests";
-
-import { _getFacebookCampaign } from "../campaigns/helpers/facebook-campaign-requests";
+import { _getMultipleFacebookCampaigns } from "../campaigns/helpers/facebook-campaign-requests";
+import { _createMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
 
 // Types
 import { NextFunction, Request } from "express";
+import { EFacebookAdSetStatus } from "../../../types/modules/facebook/campaigns/enums";
 
 export const audience = {
   getLocations: async function (req: Request, next: NextFunction) {
@@ -43,11 +44,38 @@ export const audience = {
   },
   saveAudience: async function (req: Request, next: NextFunction) {
     try {
-      console.log("req", req.body);
-      //const { access_token } = req.body.organization.facebookData;
-      // const { facebookTargetingAudience } = req.body.saveCampaignObject;
-      //const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      // const adSetData = await _saveFacebookAdSet( <-- TO DO
+      // Get  all campaigns back, we need the campaign id and the objective
+      const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
+      const { facebookTargetingAudience, platform, pageId } =
+        req.body.saveCampaignObject;
+      const facebookPlatformCampaigns: any =
+        await _getMultipleFacebookCampaigns(
+          {
+            facebookCampaignIds: facebookCampaigns as string[],
+            targetFields: "id,account_id,objective",
+          },
+          next
+        );
+      const adSetPayloadArray = facebookPlatformCampaigns.map(
+        (campaignItem: any) => {
+          return {
+            campaignId: campaignItem.id,
+            adAccount: campaignItem.account_id,
+            platform: platform,
+            objective: campaignItem.objective,
+            pageId: pageId,
+            status: EFacebookAdSetStatus.paused,
+            audience: facebookTargetingAudience,
+          };
+        }
+      );
+      const adSetData = await _createMultipleFacebookAdSets(
+        { adSetPayloadArray },
+        next
+      );
+      console.log("adSetData", adSetData);
+
+      // const adSetData = await _saveFacebookAdSet(
       //   { interestSearchString, access_token },
       //   next
       // );

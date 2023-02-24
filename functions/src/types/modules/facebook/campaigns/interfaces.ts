@@ -59,12 +59,6 @@ export interface IUpdateFacebookCampaignPayload {
   updateContent: IFacebookCampaignData;
 }
 
-export interface IGetFacebookCampaignPayload {
-  savedFacebookCampaignId: string;
-  targetFields: string; // comma separated string
-  access_token: string;
-}
-
 export interface IFacebookAudience {
   [property: string]:
     | undefined

@@ -11,7 +11,6 @@ import {
   IUpdateFacebookCampaignPayload,
   ICreateCampaignResponse,
   ICreateMultipleCampaignsResponse,
-  IGetFacebookCampaignPayload,
 } from "../../../../types/modules/facebook/campaigns/interfaces";
 import { EFacebookObjectiveValue } from "../../../../types/modules/facebook/campaigns/enums";
 
@@ -113,21 +112,17 @@ export async function _createFacebookCampaign(
 // }
 
 export async function _getFacebookCampaign(
-  getFacebookCampaignPayload: IGetFacebookCampaignPayload,
+  options: { campaignId: string; targetFields: string },
   next: NextFunction
 ): Promise<any | void> {
   try {
-    const { savedFacebookCampaignId, targetFields, access_token } =
-      getFacebookCampaignPayload;
+    const { campaignId, targetFields } = options;
     const stringifiedParams = await $stringifyParams({
-      access_token,
       fields: targetFields,
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${savedFacebookCampaignId}?${stringifiedParams}`,
-      data: {
-        access_token: FACEBOOK_SYSTEM_USER_TOKEN,
-      },
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${campaignId}?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log("Error Facebook Get Campaign", error);
@@ -170,6 +165,26 @@ export async function _deleteFacebookCampaign(
     });
   } catch (error: any) {
     console.log("Error Facebook Delete Campaign", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
+export async function _getMultipleFacebookCampaigns(
+  options: { facebookCampaignIds: string[]; targetFields: string },
+  next: NextFunction
+): Promise<boolean[] | void> {
+  try {
+    const { facebookCampaignIds, targetFields } = options;
+    return await Promise.all(
+      facebookCampaignIds.map(async (campaignId: string) => {
+        return (await _getFacebookCampaign(
+          { campaignId, targetFields },
+          next
+        )) as boolean;
+      })
+    );
+  } catch (error: any) {
+    console.log("Error Facebook Delete Multiple Campaign", error);
     return next(await $facebookErrorHandler(error));
   }
 }
