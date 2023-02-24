@@ -1,3 +1,25 @@
+export enum EFacebookCampaignStatus {
+  active = "ACTIVE",
+  paused = "PAUSED",
+  deleted = "DELETED",
+  archived = "ARCHIVED",
+}
+
+export enum EFacebookCampaignBidStrategy {
+  lowCostWithoutCap = "LOWEST_COST_WITHOUT_CAP",
+  lowCostWithCap = "LOWEST_COST_WITH_BID_CAP",
+  costCap = "COST_CAP",
+}
+
+export enum EFacebookCampaignBuyingType {
+  auction = "AUCTION",
+  reserved = "RESERVED",
+}
+
+export enum EFacebookCampaignPlaceholder {
+  budget = "1000",
+}
+
 export enum EFacebookObjectiveValue {
   reach = "REACH",
   engagements = "POST_ENGAGEMENT",

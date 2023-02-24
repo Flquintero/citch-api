@@ -3,6 +3,12 @@ import { $apiRequest } from "../../../../utils/https-call";
 import { $facebookErrorHandler } from "../../../../utils/error-handler";
 import { _chooseFromAvailableAdAccounts } from "../../helpers/generic";
 import { $stringifyParams } from "../../../../utils/stringify-params";
+import {
+  EFacebookCampaignStatus,
+  EFacebookCampaignPlaceholder,
+  EFacebookCampaignBidStrategy,
+  EFacebookCampaignBuyingType,
+} from "../../../../types/modules/facebook/campaigns/enums";
 
 // types
 import { NextFunction } from "express";
@@ -76,9 +82,12 @@ export async function _createFacebookCampaign(
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/act_${currentFacebookAdAccount}/campaigns`,
       data: {
         ...facebookCampaignData, // needs to match all the user generated params that facebook takes see https://developers.facebook.com/docs/marketing-apis/get-started
-        status: "PAUSED",
+        status: EFacebookCampaignStatus.paused,
         special_ad_categories: [],
         access_token: FACEBOOK_SYSTEM_USER_TOKEN,
+        lifetime_budget: EFacebookCampaignPlaceholder.budget,
+        bid_strategy: EFacebookCampaignBidStrategy.lowCostWithoutCap,
+        buying_type: EFacebookCampaignBuyingType.auction,
       },
     });
     return {

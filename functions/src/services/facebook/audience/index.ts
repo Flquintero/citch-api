@@ -46,8 +46,7 @@ export const audience = {
     try {
       // Get  all campaigns back, we need the campaign id and the objective
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      const { facebookTargetingAudience, platform, pageId } =
-        req.body.saveCampaignObject;
+      const { audience, platform, pageId } = req.body.saveCampaignObject;
       const facebookPlatformCampaigns: any =
         await _getMultipleFacebookCampaigns(
           {
@@ -65,7 +64,7 @@ export const audience = {
             objective: campaignItem.objective,
             pageId: pageId,
             status: EFacebookAdSetStatus.paused,
-            audience: facebookTargetingAudience,
+            audience,
           };
         }
       );
@@ -74,11 +73,6 @@ export const audience = {
         next
       );
       console.log("adSetData", adSetData);
-
-      // const adSetData = await _saveFacebookAdSet(
-      //   { interestSearchString, access_token },
-      //   next
-      // );
     } catch (error: any) {
       console.log("Error Saving Audience", error);
       return next(await $facebookErrorHandler(error));

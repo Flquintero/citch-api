@@ -1,6 +1,5 @@
 import { $apiRequest } from "../../../../utils/https-call";
 import { $facebookErrorHandler } from "../../../../utils/error-handler";
-import { $stringifyParams } from "../../../../utils/stringify-params";
 import { _getTargetedLocationObject } from "../adset-helpers/facebook-adset-location-helper";
 import { _getTargetedGenderEnum } from "../adset-helpers/facebook-adset-gender-helper";
 import { _getTargetedPlacementObject } from "../adset-helpers/facebook-adset-placement-helper";
@@ -14,7 +13,11 @@ import type { IFacebookLocation } from "../../../../types/modules/facebook/campa
 import {
   FACEBOOK_GRAPH_URL,
   FACEBOOK_API_VERSION,
+  FACEBOOK_SYSTEM_USER_TOKEN,
 } from "../facebook-constants";
+
+// 3rd
+import * as dayjs from "dayjs";
 
 export async function _createMultipleFacebookAdSets(
   options: { adSetPayloadArray: any[] },
@@ -24,7 +27,8 @@ export async function _createMultipleFacebookAdSets(
     const { adSetPayloadArray } = options;
     return (await Promise.all(
       adSetPayloadArray.map(async (adSetPayload: any) => {
-        return await _createFacebookAdSet({ adSetPayload }, next);
+        console.log("adSetPayload", adSetPayload);
+        return await _createFacebookAdSet(adSetPayload, next);
       })
     )) as any[];
   } catch (error: any) {
@@ -51,7 +55,7 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
     console.log(chosenInterests);
 
     const adsetBody = {
-      name: `ADSET-${platform.toUpperCase()}-${campaignId}-1`,
+      name: `${platform.toUpperCase()}-${campaignId}-ADSET-${objective}`,
       optimization_goal: objective,
       billing_event: EFacebookAdSetBillingEvent.impressions, // ask ernesto to see if this needs to be dynamic
       campaign_id: campaignId,
@@ -70,17 +74,17 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
         age_max: parseInt(ageMax as string),
         // ...(await _getTargetedPlacementObject(platform, placement)), IMPORTANT
       },
-      //start_time: options.targeting.formattedStartDate, // TO DO
-      //end_time: options.targeting.formattedEndDate, // TO DO
+      start_time: dayjs().unix(), // SET hardcoded here because these are placeholders to be updated by user in later steps
+      end_time: dayjs().add(2, "M").unix(), // SET hardcoded here because these are placeholders to be updated by user in later steps
     };
     console.log("adSetBody", adsetBody);
     return await $apiRequest({
       method: "POST",
-      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adAccount}/adsets`,
-      data: { ...adsetBody },
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/act_${adAccount}/adsets`,
+      data: { ...adsetBody, access_token: FACEBOOK_SYSTEM_USER_TOKEN },
     });
   } catch (error: any) {
-    console.log("Error Facebook Get Locations", error);
+    console.log("Error Facebook Save Adset", error);
     return next(await $facebookErrorHandler(error));
   }
 }
