@@ -1,9 +1,9 @@
 import { $apiRequest } from "../../../../utils/https-call";
 import { $facebookErrorHandler } from "../../../../utils/error-handler";
+import { _getTargetedInterestsObject } from "../adset-helpers/facebook-adset-interests-helper";
 import { _getTargetedLocationObject } from "../adset-helpers/facebook-adset-location-helper";
 import { _getTargetedGenderEnum } from "../adset-helpers/facebook-adset-gender-helper";
 import { _getTargetedPlacementObject } from "../adset-helpers/facebook-adset-placement-helper";
-
 // types
 import { NextFunction } from "express";
 import { EFacebookAdSetBillingEvent } from "../../../../types/modules/facebook/campaigns/enums";
@@ -65,11 +65,17 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
       status: status,
       //USE A REDUCER HERE TO GROUP BY TYPES AND PUSH TO THESE ARRAYS
       targeting: {
+        // Locations
         ...(await _getTargetedLocationObject(
           chosenLocations as IFacebookLocation[]
         )),
-        //...(await _getTargetedInterestsObject(chosenInterests)), // TO DO - This needs to be optional so add a terniary
+        // Interests
+        ...(chosenInterests
+          ? await _getTargetedInterestsObject(chosenInterests)
+          : null),
+        // Gender
         ...(await _getTargetedGenderEnum(gender as string)),
+        // Age
         age_min: parseInt(ageMin as string),
         age_max: parseInt(ageMax as string),
         // ...(await _getTargetedPlacementObject(platform, placement)), IMPORTANT
