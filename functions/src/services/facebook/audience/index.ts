@@ -68,11 +68,7 @@ export const audience = {
           };
         }
       );
-      const adSetData = await _createMultipleFacebookAdSets(
-        { adSetPayloadArray },
-        next
-      );
-      console.log("adSetData", adSetData);
+      return await _createMultipleFacebookAdSets({ adSetPayloadArray }, next);
     } catch (error: any) {
       console.log("Error Saving Audience", error);
       return next(await $facebookErrorHandler(error));

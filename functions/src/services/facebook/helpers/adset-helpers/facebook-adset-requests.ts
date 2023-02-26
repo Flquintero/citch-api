@@ -52,8 +52,6 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
     const { ageMin, ageMax, gender, chosenLocations, chosenInterests } =
       audience;
 
-    console.log(chosenInterests);
-
     const adsetBody = {
       name: `${platform.toUpperCase()}-${campaignId}-ADSET-${objective}`,
       optimization_goal: objective,
@@ -63,7 +61,6 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
         page_id: pageId,
       },
       status: status,
-      //USE A REDUCER HERE TO GROUP BY TYPES AND PUSH TO THESE ARRAYS
       targeting: {
         // Locations
         ...(await _getTargetedLocationObject(
@@ -78,12 +75,11 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
         // Age
         age_min: parseInt(ageMin as string),
         age_max: parseInt(ageMax as string),
-        // ...(await _getTargetedPlacementObject(platform, placement)), IMPORTANT
+        // ...(await _getTargetedPlacementObject(platform, placement)), IMPORTANT MAYBE WE DONT NEED
       },
       start_time: dayjs().unix(), // SET hardcoded here because these are placeholders to be updated by user in later steps
       end_time: dayjs().add(2, "M").unix(), // SET hardcoded here because these are placeholders to be updated by user in later steps
     };
-    console.log("adSetBody", adsetBody);
     return await $apiRequest({
       method: "POST",
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/act_${adAccount}/adsets`,
