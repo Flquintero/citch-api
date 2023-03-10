@@ -27,7 +27,6 @@ export async function _createMultipleFacebookAdSets(
     const { adSetPayloadArray } = options;
     return (await Promise.all(
       adSetPayloadArray.map(async (adSetPayload: any) => {
-        console.log("adSetPayload", adSetPayload);
         return await _createFacebookAdSet(adSetPayload, next);
       })
     )) as any[];

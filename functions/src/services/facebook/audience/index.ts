@@ -6,8 +6,15 @@ import {
   _getFacebookLocations,
   _getFacebookInterests,
 } from "./helpers/facebook-audience-requests";
-import { _getMultipleFacebookCampaigns } from "../campaigns/helpers/facebook-campaign-requests";
+import {
+  _getMultipleFacebookCampaigns,
+  _getFacebookCampaignEdge,
+} from "../campaigns/helpers/facebook-campaign-requests";
 import { _createMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
+import {
+  _formatChosenLocations,
+  _formatGender,
+} from "./helpers/format-citch-audience-payload";
 
 // Types
 import { NextFunction, Request } from "express";
@@ -76,8 +83,33 @@ export const audience = {
   },
   getSavedCampaignAudience: async function (req: Request, next: NextFunction) {
     try {
-      const { savedDBFacebookCampaign } = req.body;
-      console.log("savedDBFacebookCampaign", savedDBFacebookCampaign);
+      const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
+      // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
+      // im assuming that they will always have the same data in citch reach and hence just pick the first
+      const facebookAdSetTargeting: any = await _getFacebookCampaignEdge(
+        {
+          campaignId: facebookCampaigns[0] as string,
+          targetEdge: "adsets",
+          targetFields: "targeting",
+        },
+        next
+      );
+      const { age_max, age_min, genders, geo_locations, flexible_spec } =
+        facebookAdSetTargeting.data[0].targeting;
+      const savedAudience = {
+        ageMin: age_min.toString(),
+        ageMax: age_max.toString(),
+        gender: await _formatGender(genders),
+        chosenLocations: await _formatChosenLocations(geo_locations),
+        ...(flexible_spec && flexible_spec[0]?.interests
+          ? { chosenInterests: flexible_spec[0].interests }
+          : null),
+      };
+      console.log("savedAudienceLoc", savedAudience.chosenLocations);
+      console.log("savedAudience", savedAudience);
+      return savedAudience;
+      // choose the first one - in the future maybe we need to compare that they are the same
+      // Change the response into the audience structure that we use in FE
     } catch (error: any) {
       console.log(
         "Error Getting Campaign Audience",

@@ -214,3 +214,22 @@ export async function _deleteMultipleFacebookCampaigns(
     return next(await $facebookErrorHandler(error));
   }
 }
+
+export async function _getFacebookCampaignEdge(
+  options: { campaignId: string; targetEdge: string; targetFields: string },
+  next: NextFunction
+): Promise<any | void> {
+  try {
+    const { campaignId, targetEdge, targetFields } = options;
+    const stringifiedParams = await $stringifyParams({
+      fields: targetFields,
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
+    });
+    return await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${campaignId}/${targetEdge}?${stringifiedParams}`,
+    });
+  } catch (error: any) {
+    console.log("Error Facebook Get Campaign", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
