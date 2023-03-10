@@ -74,4 +74,16 @@ export const audience = {
       return next(await $facebookErrorHandler(error));
     }
   },
+  getSavedCampaignAudience: async function (req: Request, next: NextFunction) {
+    try {
+      const { savedDBFacebookCampaign } = req.body;
+      console.log("savedDBFacebookCampaign", savedDBFacebookCampaign);
+    } catch (error: any) {
+      console.log(
+        "Error Getting Campaign Audience",
+        await $facebookErrorHandler(error)
+      );
+      return next(await $facebookErrorHandler(error));
+    }
+  },
 };

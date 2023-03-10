@@ -149,6 +149,21 @@ facebookRouter.post(
   }
 );
 
+facebookRouter.get(
+  "/campaign-audience/:campaignId",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(
+      await facebookService.audience.getSavedCampaignAudience(req, next)
+    );
+  }
+);
+
 facebookRouter.get("*", async (req: Request, res: Response) => {
   res.status(404).send("This route does not exist.");
 });
