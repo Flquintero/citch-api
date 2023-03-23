@@ -24,9 +24,11 @@ export const audience = {
   getLocations: async function (req: Request, next: NextFunction) {
     try {
       const { locationSearchString } = req.params;
-      const { access_token } = req.body.organization.facebookData;
       const locationsData = await _getFacebookLocations(
-        { locationSearchString, access_token },
+        {
+          locationSearchString,
+          locationTypes: `["country", "region", "city", "zip"]`,
+        },
         next
       );
       return locationsData.data;
@@ -38,9 +40,8 @@ export const audience = {
   getInterests: async function (req: Request, next: NextFunction) {
     try {
       const { interestSearchString } = req.params;
-      const { access_token } = req.body.organization.facebookData;
       const interestsData = await _getFacebookInterests(
-        { interestSearchString, access_token },
+        { interestSearchString },
         next
       );
       return interestsData.data;
@@ -94,6 +95,10 @@ export const audience = {
         },
         next
       );
+      console.log("facebookAdSetTargeting", facebookAdSetTargeting);
+      if (!facebookAdSetTargeting.data[0]) {
+        return;
+      }
       const { age_max, age_min, genders, geo_locations, flexible_spec } =
         facebookAdSetTargeting.data[0].targeting;
       const savedAudience = {
@@ -105,8 +110,6 @@ export const audience = {
           ? { chosenInterests: flexible_spec[0].interests }
           : null),
       };
-      console.log("savedAudienceLoc", savedAudience.chosenLocations);
-      console.log("savedAudience", savedAudience);
       return savedAudience;
       // choose the first one - in the future maybe we need to compare that they are the same
       // Change the response into the audience structure that we use in FE

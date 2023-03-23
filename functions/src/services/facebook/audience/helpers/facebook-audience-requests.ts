@@ -9,24 +9,25 @@ import { NextFunction } from "express";
 import {
   FACEBOOK_GRAPH_URL,
   FACEBOOK_API_VERSION,
+  FACEBOOK_SYSTEM_USER_TOKEN,
 } from "../../helpers/facebook-constants";
 
 export async function _getFacebookLocations(
   options: {
     locationSearchString: string;
-    access_token: string;
     fields?: string;
+    locationTypes: string; // `["country", "region", "city", "zip"]`
   },
   next: NextFunction
 ) {
   try {
-    const { locationSearchString, access_token, fields } = options;
+    const { locationSearchString, fields, locationTypes } = options;
     const stringifiedParams = await $stringifyParams({
       ...(fields ? { fields } : null),
-      access_token,
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
       q: locationSearchString,
       type: "adgeolocation",
-      location_types: `["country", "region", "city", "zip"]`,
+      location_types: locationTypes,
     });
     return await $apiRequest({
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/search?${stringifiedParams}`,
@@ -40,16 +41,15 @@ export async function _getFacebookLocations(
 export async function _getFacebookInterests(
   options: {
     interestSearchString: string;
-    access_token: string;
     fields?: string;
   },
   next: NextFunction
 ) {
   try {
-    const { interestSearchString, access_token, fields } = options;
+    const { interestSearchString, fields } = options;
     const stringifiedParams = await $stringifyParams({
       ...(fields ? { fields } : null),
-      access_token,
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
       q: interestSearchString,
       type: "adinterest",
     });

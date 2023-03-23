@@ -9,13 +9,22 @@ export const _formatGender = (genders: number[]) => {
       return "all";
   }
 };
-export const _formatChosenLocations = (geo_locations: any) => {
+export const _formatChosenLocations = async (geo_locations: any) => {
   const { location_types, ...locations } = geo_locations;
-  console.log("locations", locations);
   const formattedLocations = [];
   for (const key in locations) {
     if (Object.prototype.hasOwnProperty.call(locations, key)) {
-      formattedLocations.push(locations[key]);
+      // facebooks returns only country code as a string so we wanted to normalize
+      if (key === "countries") {
+        const formattedCountries = locations[key].map(
+          (countryString: string) => {
+            return { country_code: countryString, key: countryString };
+          }
+        );
+        formattedLocations.push(formattedCountries);
+      } else {
+        formattedLocations.push(locations[key]);
+      }
     }
   }
   return formattedLocations.flat();
