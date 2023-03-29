@@ -9,8 +9,12 @@ import {
 import {
   _getMultipleFacebookCampaigns,
   _getFacebookCampaignEdge,
+  _getMultipleFacebookCampaignEdge,
 } from "../campaigns/helpers/facebook-campaign-requests";
-import { _createMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
+import {
+  _createMultipleFacebookAdSets,
+  _updateMultipleFacebookAdSets,
+} from "../helpers/adset-helpers/facebook-adset-requests";
 import {
   _formatChosenLocations,
   _formatGender,
@@ -116,6 +120,43 @@ export const audience = {
     } catch (error: any) {
       console.log(
         "Error Getting Campaign Audience",
+        await $facebookErrorHandler(error)
+      );
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  updateSavedCampaignAudience: async function (
+    req: Request,
+    next: NextFunction
+  ) {
+    try {
+      const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
+      const { audience } = req.body.saveCampaignObject;
+      // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
+      // im assuming that they will always have the same data in citch reach and hence just pick the first
+      const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
+        {
+          campaignIds: facebookCampaigns as string[],
+          targetEdge: "adsets",
+          targetFields: "id",
+        },
+        next
+      );
+      console.log("facebookAdSets", facebookAdSets[0].data);
+      const adSetIds = facebookAdSets[0].data;
+      if (!adSetIds[0]) {
+        return;
+      }
+      const adSetPayloadArray = adSetIds.map((adSetId: { id: string }) => {
+        return {
+          adSetId: adSetId.id,
+          audience,
+        };
+      });
+      return await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
+    } catch (error: any) {
+      console.log(
+        "Error Updating Campaign Audience",
         await $facebookErrorHandler(error)
       );
       return next(await $facebookErrorHandler(error));

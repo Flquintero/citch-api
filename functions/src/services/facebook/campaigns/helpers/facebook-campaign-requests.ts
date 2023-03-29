@@ -233,3 +233,23 @@ export async function _getFacebookCampaignEdge(
     return next(await $facebookErrorHandler(error));
   }
 }
+
+export async function _getMultipleFacebookCampaignEdge(
+  options: { campaignIds: string[]; targetEdge: string; targetFields: string },
+  next: NextFunction
+): Promise<any | void> {
+  try {
+    const { campaignIds, targetEdge, targetFields } = options;
+    return await Promise.all(
+      campaignIds.map(async (campaignId: string) => {
+        return (await _getFacebookCampaignEdge(
+          { campaignId, targetEdge, targetFields },
+          next
+        )) as boolean;
+      })
+    );
+  } catch (error: any) {
+    console.log("Error Facebook Get Multiple Campaign Edges", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}

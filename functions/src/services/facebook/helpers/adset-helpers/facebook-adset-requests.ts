@@ -36,6 +36,75 @@ export async function _createMultipleFacebookAdSets(
   }
 }
 
+export async function _updateMultipleFacebookAdSets(
+  options: { adSetPayloadArray: any[] },
+  next: NextFunction
+): Promise<boolean[] | void> {
+  try {
+    const { adSetPayloadArray } = options;
+    return (await Promise.all(
+      adSetPayloadArray.map(async (adSetPayload: any) => {
+        return await _updateFacebookAdSet(adSetPayload, next);
+      })
+    )) as any[];
+  } catch (error: any) {
+    console.log("Error Facebook Updating Multiple Ad Sets", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
+export async function _updateFacebookAdSet(options: any, next: NextFunction) {
+  try {
+    const { adSetId, audience } = options;
+
+    console.log("audience", audience);
+
+    const { ageMin, ageMax, gender, chosenLocations, chosenInterests } =
+      audience;
+
+    // need to make it
+    const adsetBody = {
+      ...(audience
+        ? {
+            targeting: {
+              // Locations
+              ...(await _getTargetedLocationObject(
+                chosenLocations as IFacebookLocation[]
+              )),
+              // Interests
+              ...(chosenInterests
+                ? await _getTargetedInterestsObject(chosenInterests)
+                : null),
+              // Gender
+              ...(await _getTargetedGenderEnum(gender as string)),
+              // Age
+              age_min: parseInt(ageMin as string),
+              age_max: parseInt(ageMax as string),
+              // ...(await _getTargetedPlacementObject(platform, placement)), IMPORTANT MAYBE WE DONT NEED
+            },
+          }
+        : null),
+    };
+    console.log("ADSETID", adSetId);
+    console.log("ADSETBODY", adsetBody);
+    console.log("ADSETBODY", adsetBody.targeting?.flexible_spec);
+    console.log("l", chosenLocations);
+
+    /* UNCOMMENT WHEN WE GET THE DATA PAYLOAD CORRECT */
+
+    // return await $apiRequest({
+    //   method: "POST",
+    //   url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adSetId}`,
+    //   data: { ...adsetBody, access_token: FACEBOOK_SYSTEM_USER_TOKEN },
+    // });
+
+    /* UNCOMMENT ABOVE WHEN WE GET THE DATA PAYLOAD CORRECT */
+  } catch (error: any) {
+    console.log("Error Facebook Save Adset", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
 export async function _createFacebookAdSet(options: any, next: NextFunction) {
   try {
     const {
