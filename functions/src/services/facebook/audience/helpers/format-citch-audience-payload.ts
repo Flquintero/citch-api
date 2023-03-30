@@ -1,3 +1,5 @@
+import { IFacebookLocation } from "../../../../types/modules/facebook/campaigns/interfaces";
+
 export const _formatGender = (genders: number[]) => {
   if (!genders) return "all";
   switch (genders[0]) {
@@ -18,14 +20,43 @@ export const _formatChosenLocations = async (geo_locations: any) => {
       if (key === "countries") {
         const formattedCountries = locations[key].map(
           (countryString: string) => {
-            return { country_code: countryString, key: countryString };
+            return {
+              country_code: countryString,
+              key: countryString,
+              type: setSavedChosenLocationType(key),
+            };
           }
         );
         formattedLocations.push(formattedCountries);
       } else {
-        formattedLocations.push(locations[key]);
+        // add type to region, city and zip
+        const otherLocations = locations[key].map(
+          (locationObject: IFacebookLocation) => {
+            return {
+              ...locationObject,
+              type: setSavedChosenLocationType(key),
+            };
+          }
+        );
+        formattedLocations.push(otherLocations);
       }
     }
   }
   return formattedLocations.flat();
+};
+
+const setSavedChosenLocationType = (locationType: string) => {
+  switch (locationType) {
+    case "countries":
+      return "country";
+    case "regions":
+      return "region";
+    case "cities":
+      return "city";
+    case "zips":
+      return "zip";
+    default:
+      console.log("targeting locations tansform type error");
+      return "";
+  }
 };

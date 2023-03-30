@@ -141,7 +141,6 @@ export const audience = {
         },
         next
       );
-      console.log("facebookAdSets", facebookAdSets[0].data);
       const adSetIds = facebookAdSets[0].data;
       if (!adSetIds[0]) {
         return;

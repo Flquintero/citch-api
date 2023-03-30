@@ -80,10 +80,6 @@ export async function _updateFacebookAdSet(options: any, next: NextFunction) {
           }
         : null),
     };
-    console.log("ADSETID", adSetId);
-    console.log("ADSETBODY", adsetBody);
-    console.log("ADSETBODY", adsetBody.targeting?.flexible_spec);
-    console.log("l", chosenLocations);
     return await $apiRequest({
       method: "POST",
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adSetId}`,
