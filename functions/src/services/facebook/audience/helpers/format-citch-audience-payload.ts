@@ -1,5 +1,5 @@
 export const _formatGender = (genders: number[]) => {
-  console.log("genders", genders[0]);
+  if (!genders) return "all";
   switch (genders[0]) {
     case 1:
       return "male";

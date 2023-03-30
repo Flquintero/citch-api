@@ -11,7 +11,6 @@ let $firestormErrorHandler = async (error: any) => {
 };
 let $facebookErrorHandler = async (error: any) => {
   let returnError = error;
-  console.log("ERRORR DATA", error.response.data);
   if (error.response) {
     returnError = {
       code: error.response.data.code,
@@ -19,6 +18,7 @@ let $facebookErrorHandler = async (error: any) => {
       message: error.response.data.error_user_msg,
     };
   }
+  console.log("ERROR HANDLER FB", returnError);
   return returnError;
 };
 let $genericErrorHandler = async (error: {

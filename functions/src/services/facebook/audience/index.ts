@@ -99,7 +99,6 @@ export const audience = {
         },
         next
       );
-      console.log("facebookAdSetTargeting", facebookAdSetTargeting);
       if (!facebookAdSetTargeting.data[0]) {
         return;
       }

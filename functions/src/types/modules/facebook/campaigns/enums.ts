@@ -17,7 +17,7 @@ export enum EFacebookCampaignBuyingType {
 }
 
 export enum EFacebookCampaignPlaceholder {
-  budget = "1000",
+  budget = "100000", // $1000
 }
 
 export enum EFacebookObjectiveValue {

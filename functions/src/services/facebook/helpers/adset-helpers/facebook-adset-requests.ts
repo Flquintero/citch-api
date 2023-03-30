@@ -56,13 +56,8 @@ export async function _updateMultipleFacebookAdSets(
 export async function _updateFacebookAdSet(options: any, next: NextFunction) {
   try {
     const { adSetId, audience } = options;
-
-    console.log("audience", audience);
-
     const { ageMin, ageMax, gender, chosenLocations, chosenInterests } =
       audience;
-
-    // need to make it
     const adsetBody = {
       ...(audience
         ? {
@@ -89,16 +84,11 @@ export async function _updateFacebookAdSet(options: any, next: NextFunction) {
     console.log("ADSETBODY", adsetBody);
     console.log("ADSETBODY", adsetBody.targeting?.flexible_spec);
     console.log("l", chosenLocations);
-
-    /* UNCOMMENT WHEN WE GET THE DATA PAYLOAD CORRECT */
-
-    // return await $apiRequest({
-    //   method: "POST",
-    //   url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adSetId}`,
-    //   data: { ...adsetBody, access_token: FACEBOOK_SYSTEM_USER_TOKEN },
-    // });
-
-    /* UNCOMMENT ABOVE WHEN WE GET THE DATA PAYLOAD CORRECT */
+    return await $apiRequest({
+      method: "POST",
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adSetId}`,
+      data: { ...adsetBody, access_token: FACEBOOK_SYSTEM_USER_TOKEN },
+    });
   } catch (error: any) {
     console.log("Error Facebook Save Adset", error);
     return next(await $facebookErrorHandler(error));
