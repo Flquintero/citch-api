@@ -14,10 +14,9 @@ import {
 
 // Types
 import { NextFunction, Request } from "express";
-import { EFacebookAdSetStatus } from "../../../types/modules/facebook/campaigns/enums";
 
-export const date = {
-  getSavedCampaignDate: async function (req: Request, next: NextFunction) {
+export const duration = {
+  getCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
@@ -44,39 +43,20 @@ export const date = {
     }
   },
   // THIS IS BECAUSE WE NEED TO CHANGE A FLAG THE FIRST TIME THAT IT IS SAVED
-  saveSavedCampaignDate: async function (req: Request, next: NextFunction) {
+  saveCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
       // Get  all campaigns back, we need the campaign id and the objective
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      const { audience, platform, pageId } = req.body.saveCampaignObject;
-      const facebookPlatformCampaigns: any =
-        await _getMultipleFacebookCampaigns(
-          {
-            facebookCampaignIds: facebookCampaigns as string[],
-            targetFields: "id,account_id,objective",
-          },
-          next
-        );
-      const adSetPayloadArray = facebookPlatformCampaigns.map(
-        (campaignItem: any) => {
-          return {
-            campaignId: campaignItem.id,
-            adAccount: campaignItem.account_id,
-            platform: platform,
-            objective: campaignItem.objective,
-            pageId: pageId,
-            status: EFacebookAdSetStatus.paused,
-            audience,
-          };
-        }
-      );
-      return await _createMultipleFacebookAdSets({ adSetPayloadArray }, next);
+      const { campaignDates } = req.body.saveCampaignObject;
+
+      console.log("facebookCampaigns", facebookCampaigns);
+      console.log("campaignDates", campaignDates);
     } catch (error: any) {
       console.log("Error Saving Audience", error);
       return next(await $facebookErrorHandler(error));
     }
   },
-  updateSavedCampaignDate: async function (req: Request, next: NextFunction) {
+  updateCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       const { audience } = req.body.saveCampaignObject;

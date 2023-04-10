@@ -145,7 +145,7 @@ facebookRouter.post(
     $getDBFacebookCampaign,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.audience.saveAudience(req, next));
+    res.json(await facebookService.audience.saveCampaignAudience(req, next));
   }
 );
 
@@ -158,9 +158,7 @@ facebookRouter.get(
     $getDBFacebookCampaign,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(
-      await facebookService.audience.getSavedCampaignAudience(req, next)
-    );
+    res.json(await facebookService.audience.getCampaignAudience(req, next));
   }
 );
 
@@ -173,14 +171,25 @@ facebookRouter.put(
     $getDBFacebookCampaign,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(
-      await facebookService.audience.updateSavedCampaignAudience(req, next)
-    );
+    res.json(await facebookService.audience.updateCampaignAudience(req, next));
+  }
+);
+
+facebookRouter.get(
+  "/campaign-duration/:campaignId",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.duration.getCampaignDuration(req, next));
   }
 );
 
 facebookRouter.post(
-  "/campaign-date",
+  "/campaign-duration",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -188,12 +197,12 @@ facebookRouter.post(
     $getDBFacebookCampaign,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.date.saveSavedCampaignDate(req, next));
+    res.json(await facebookService.duration.saveCampaignDuration(req, next));
   }
 );
 
 facebookRouter.put(
-  "/campaign-date",
+  "/campaign-duration",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -201,7 +210,7 @@ facebookRouter.put(
     $getDBFacebookCampaign,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.date.updateSavedCampaignDate(req, next));
+    res.json(await facebookService.duration.updateCampaignDuration(req, next));
   }
 );
 

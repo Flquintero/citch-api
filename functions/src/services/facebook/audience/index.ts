@@ -54,7 +54,7 @@ export const audience = {
       return next(await $facebookErrorHandler(error));
     }
   },
-  saveAudience: async function (req: Request, next: NextFunction) {
+  saveCampaignAudience: async function (req: Request, next: NextFunction) {
     try {
       // Get  all campaigns back, we need the campaign id and the objective
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
@@ -86,7 +86,7 @@ export const audience = {
       return next(await $facebookErrorHandler(error));
     }
   },
-  getSavedCampaignAudience: async function (req: Request, next: NextFunction) {
+  getCampaignAudience: async function (req: Request, next: NextFunction) {
     try {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
@@ -124,10 +124,7 @@ export const audience = {
       return next(await $facebookErrorHandler(error));
     }
   },
-  updateSavedCampaignAudience: async function (
-    req: Request,
-    next: NextFunction
-  ) {
+  updateCampaignAudience: async function (req: Request, next: NextFunction) {
     try {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       const { audience } = req.body.saveCampaignObject;
