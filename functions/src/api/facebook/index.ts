@@ -46,7 +46,7 @@ facebookRouter.get(
 );
 
 facebookRouter.post(
-  "/save-user",
+  "/user",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     const facebookUserData = await facebookService.auth.getUserAuthData(
@@ -85,7 +85,7 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
-  "/save-campaign-objective",
+  "/campaign-objective",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
     res.json(await facebookService.campaigns.saveCampaignObjective(req, next));
@@ -93,7 +93,7 @@ facebookRouter.post(
 );
 
 facebookRouter.put(
-  "/update-campaign-objective",
+  "/campaign-objective",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -137,7 +137,7 @@ facebookRouter.get(
 );
 
 facebookRouter.post(
-  "/save-campaign-audience",
+  "/campaign-audience",
   [
     $appCheckVerification,
     $idTokenVerification,
