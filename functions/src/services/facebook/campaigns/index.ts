@@ -113,8 +113,8 @@ export const campaigns = {
           createdFacebookCampaigns as ICreateMultipleCampaignsResponse
         ).facebookAdAccount,
         organizationPathId: `organizations/${organizationId}`,
-        userBudgetUpdated: false,
-        userDateUpdated: false,
+        budgetSavedByUser: false,
+        durationSavedByUser: false,
       };
       return await this.createCampaign(createCampaignPayload, next);
     } catch (error: any) {

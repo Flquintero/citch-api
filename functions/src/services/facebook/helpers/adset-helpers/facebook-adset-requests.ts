@@ -55,29 +55,30 @@ export async function _updateMultipleFacebookAdSets(
 
 export async function _updateFacebookAdSet(options: any, next: NextFunction) {
   try {
-    const { adSetId, audience } = options;
-    const { ageMin, ageMax, gender, chosenLocations, chosenInterests } =
-      audience;
+    const { adSetId, audience, duration } = options;
     const adsetBody = {
       ...(audience
         ? {
             targeting: {
               // Locations
               ...(await _getTargetedLocationObject(
-                chosenLocations as IFacebookLocation[]
+                audience.chosenLocations as IFacebookLocation[]
               )),
               // Interests
-              ...(chosenInterests
-                ? await _getTargetedInterestsObject(chosenInterests)
+              ...(audience.chosenInterests
+                ? await _getTargetedInterestsObject(audience.chosenInterests)
                 : null),
               // Gender
-              ...(await _getTargetedGenderEnum(gender as string)),
+              ...(await _getTargetedGenderEnum(audience.gender as string)),
               // Age
-              age_min: parseInt(ageMin as string),
-              age_max: parseInt(ageMax as string),
+              age_min: parseInt(audience.ageMin as string),
+              age_max: parseInt(audience.ageMax as string),
               // ...(await _getTargetedPlacementObject(platform, placement)), IMPORTANT MAYBE WE DONT NEED
             },
           }
+        : null),
+      ...(duration
+        ? { start_time: duration.startDate, end_time: duration.endDate }
         : null),
     };
     return await $apiRequest({

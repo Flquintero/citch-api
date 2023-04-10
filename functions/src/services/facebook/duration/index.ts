@@ -12,6 +12,9 @@ import {
   _updateMultipleFacebookAdSets,
 } from "../helpers/adset-helpers/facebook-adset-requests";
 
+// Service
+import facebookService from "../../../services/facebook";
+
 // Types
 import { NextFunction, Request } from "express";
 
@@ -46,11 +49,44 @@ export const duration = {
   saveCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
       // Get  all campaigns back, we need the campaign id and the objective
+      console.log(
+        "req.body.savedDBFacebookCampaign",
+        req.body.savedDBFacebookCampaign
+      );
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      const { campaignDates } = req.body.saveCampaignObject;
+      const { campaignId, campaignDates } = req.body.saveCampaignObject;
 
       console.log("facebookCampaigns", facebookCampaigns);
       console.log("campaignDates", campaignDates);
+
+      const updateCampaignPayload = {
+        campaignId,
+        updateData: { durationSavedByUser: true },
+      };
+      console.log("updateCampaignPayload", updateCampaignPayload);
+      await facebookService.campaigns.updateCampaign(
+        updateCampaignPayload,
+        next
+      );
+      const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
+        {
+          campaignIds: facebookCampaigns as string[],
+          targetEdge: "adsets",
+          targetFields: "id",
+        },
+        next
+      );
+      const adSetIds = facebookAdSets[0].data;
+      if (!adSetIds[0]) {
+        return;
+      }
+      const adSetPayloadArray = adSetIds.map((adSetId: { id: string }) => {
+        return {
+          adSetId: adSetId.id,
+          duration: campaignDates,
+        };
+      });
+      return await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
     } catch (error: any) {
       console.log("Error Saving Audience", error);
       return next(await $facebookErrorHandler(error));
