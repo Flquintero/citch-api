@@ -36,6 +36,23 @@ export async function _createMultipleFacebookAdSets(
   }
 }
 
+export async function _copyMultipleFacebookAdSets(
+  options: { adSetCopyPayloadArray: any[] },
+  next: NextFunction
+): Promise<boolean[] | void> {
+  try {
+    const { adSetCopyPayloadArray } = options;
+    return (await Promise.all(
+      adSetCopyPayloadArray.map(async (adSetPayload: any) => {
+        return await _copyFacebookAdSet(adSetPayload, next);
+      })
+    )) as any[];
+  } catch (error: any) {
+    console.log("Error Facebook Copying Multiple Ad Sets", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
 export async function _updateMultipleFacebookAdSets(
   options: { adSetPayloadArray: any[] },
   next: NextFunction
@@ -142,6 +159,25 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
     });
   } catch (error: any) {
     console.log("Error Facebook Save Adset", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
+export async function _copyFacebookAdSet(options: any, next: NextFunction) {
+  try {
+    const { adSetId, adSetName, updateData } = options;
+
+    const adsetBody = {
+      name: adSetName,
+      ...updateData,
+    };
+    return await $apiRequest({
+      method: "POST",
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adSetId}/copies`,
+      data: { ...adsetBody, access_token: FACEBOOK_SYSTEM_USER_TOKEN },
+    });
+  } catch (error: any) {
+    console.log("Error Facebook Copy Adset", error);
     return next(await $facebookErrorHandler(error));
   }
 }

@@ -10,6 +10,7 @@ import {
 import {
   _createMultipleFacebookAdSets,
   _updateMultipleFacebookAdSets,
+  _copyMultipleFacebookAdSets,
 } from "../helpers/adset-helpers/facebook-adset-requests";
 
 // Service
@@ -49,44 +50,45 @@ export const duration = {
   saveCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
       // Get  all campaigns back, we need the campaign id and the objective
-      console.log(
-        "req.body.savedDBFacebookCampaign",
-        req.body.savedDBFacebookCampaign
-      );
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       const { campaignId, campaignDates } = req.body.saveCampaignObject;
 
-      console.log("facebookCampaigns", facebookCampaigns);
-      console.log("campaignDates", campaignDates);
-
-      const updateCampaignPayload = {
-        campaignId,
-        updateData: { durationSavedByUser: true },
-      };
-      console.log("updateCampaignPayload", updateCampaignPayload);
-      await facebookService.campaigns.updateCampaign(
-        updateCampaignPayload,
-        next
-      );
       const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
         {
           campaignIds: facebookCampaigns as string[],
           targetEdge: "adsets",
-          targetFields: "id",
+          targetFields: "id,name",
         },
         next
       );
-      const adSetIds = facebookAdSets[0].data;
-      if (!adSetIds[0]) {
+      const adSets = facebookAdSets[0].data;
+      if (!adSets[0]) {
         return;
       }
-      const adSetPayloadArray = adSetIds.map((adSetId: { id: string }) => {
-        return {
-          adSetId: adSetId.id,
-          duration: campaignDates,
-        };
-      });
-      return await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
+      const adSetCopyPayloadArray = adSets.map(
+        (adSet: { id: string; name: string }) => {
+          return {
+            adSetId: adSet.id,
+            adSetName: adSet.name,
+            updateData: {
+              start_time: campaignDates.startDate,
+              end_time: campaignDates.endDate,
+            },
+          };
+        }
+      );
+      await _copyMultipleFacebookAdSets({ adSetCopyPayloadArray }, next);
+      // TO DO: DELETE ORIGINAL ADSETS
+      // SEEMS LIKE AFTER THIS WE CAN UPDATE WITHOUT A PROBLEM
+      // set date updated after everything works
+      const updateCampaignPayload = {
+        campaignId,
+        updateData: { durationSavedByUser: true },
+      };
+      return await facebookService.campaigns.updateCampaign(
+        updateCampaignPayload,
+        next
+      );
     } catch (error: any) {
       console.log("Error Saving Audience", error);
       return next(await $facebookErrorHandler(error));
