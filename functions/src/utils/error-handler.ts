@@ -13,12 +13,12 @@ let $facebookErrorHandler = async (error: any) => {
   let returnError = error;
   if (error.response) {
     returnError = {
-      code: error.response.data.code,
-      title: error.response.data.error_user_title,
-      message: error.response.data.error_user_msg,
+      code: error.response.status,
+      title: error.response.data.error.error_user_title,
+      message: error.response.data.error.error_user_msg,
     };
   }
-  console.log("ERROR HANDLER FB", returnError);
+  console.log("ERROR HANDLER FB", error.response.data.error);
   return returnError;
 };
 let $genericErrorHandler = async (error: {
