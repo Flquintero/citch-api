@@ -11,6 +11,7 @@ import {
   _createMultipleFacebookAdSets,
   _updateMultipleFacebookAdSets,
   _copyMultipleFacebookAdSets,
+  _deleteMultipleFacebookAdSets,
 } from "../helpers/adset-helpers/facebook-adset-requests";
 
 // Service
@@ -61,11 +62,11 @@ export const duration = {
         },
         next
       );
-      const adSets = facebookAdSets[0].data;
-      if (!adSets[0]) {
+      const adSetsList = facebookAdSets[0].data;
+      if (!adSetsList[0]) {
         return;
       }
-      const adSetCopyPayloadArray = adSets.map(
+      const adSetCopyPayloadArray = adSetsList.map(
         (adSet: { id: string; name: string }) => {
           return {
             adSetId: adSet.id,
@@ -78,6 +79,7 @@ export const duration = {
         }
       );
       await _copyMultipleFacebookAdSets({ adSetCopyPayloadArray }, next);
+      await _deleteMultipleFacebookAdSets(adSetsList, next);
       // TO DO: DELETE ORIGINAL ADSETS
       // SEEMS LIKE AFTER THIS WE CAN UPDATE WITHOUT A PROBLEM
       // set date updated after everything works

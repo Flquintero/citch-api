@@ -36,6 +36,23 @@ export async function _createMultipleFacebookAdSets(
   }
 }
 
+export async function _deleteMultipleFacebookAdSets(
+  adSetsList: Array<{ id: string; name: string }>,
+  next: NextFunction
+): Promise<boolean[] | void> {
+  try {
+    return (await Promise.all(
+      adSetsList.map(async (adSet: any) => {
+        const { id } = adSet;
+        return await _deleteFacebookAdSet(id, next);
+      })
+    )) as any[];
+  } catch (error: any) {
+    console.log("Error Facebook Creating Multiple Ad Sets", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
 export async function _copyMultipleFacebookAdSets(
   options: { adSetCopyPayloadArray: any[] },
   next: NextFunction
@@ -159,6 +176,22 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
     });
   } catch (error: any) {
     console.log("Error Facebook Save Adset", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+
+export async function _deleteFacebookAdSet(
+  adSetId: string,
+  next: NextFunction
+) {
+  try {
+    return await $apiRequest({
+      method: "DELETE",
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${adSetId}`,
+      data: { access_token: FACEBOOK_SYSTEM_USER_TOKEN },
+    });
+  } catch (error: any) {
+    console.log("Error Facebook Delete Adset", error);
     return next(await $facebookErrorHandler(error));
   }
 }
