@@ -23,20 +23,29 @@ import { NextFunction, Request } from "express";
 export const duration = {
   getCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
-      const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
+      const { facebookCampaigns, durationSavedByUser } =
+        req.body.savedDBFacebookCampaign;
+      if (!durationSavedByUser) {
+        return null;
+      }
       // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
       // im assuming that they will always have the same data in citch reach and hence just pick the first
-      const facebookAdSetTargeting: any = await _getFacebookCampaignEdge(
+      const facebookAdSetDuration: any = await _getFacebookCampaignEdge(
         {
           campaignId: facebookCampaigns[0] as string,
           targetEdge: "adsets",
-          targetFields: "targeting",
+          targetFields: "end_time, start_time",
         },
         next
       );
-      if (!facebookAdSetTargeting.data[0]) {
+      if (!facebookAdSetDuration.data[0]) {
         return;
       }
+      const { end_time, start_time } = facebookAdSetDuration.data[0];
+      return {
+        endDate: end_time,
+        startDate: start_time,
+      };
       // choose the first one - in the future maybe we need to compare that they are the same
       // Change the response into the audience structure that we use in FE
     } catch (error: any) {
