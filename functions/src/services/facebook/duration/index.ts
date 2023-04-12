@@ -63,34 +63,12 @@ export const duration = {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       const { campaignId, campaignDates } = req.body.saveCampaignObject;
 
-      const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
-        {
-          campaignIds: facebookCampaigns as string[],
-          targetEdge: "adsets",
-          targetFields: "id,name",
-        },
+      await performCopyUpdateAndDeleteFacebookAdsets(
+        facebookCampaigns,
+        campaignDates,
         next
       );
-      const adSetsList = facebookAdSets[0].data;
-      if (!adSetsList[0]) {
-        return;
-      }
-      const adSetCopyPayloadArray = adSetsList.map(
-        (adSet: { id: string; name: string }) => {
-          return {
-            adSetId: adSet.id,
-            adSetName: adSet.name,
-            updateData: {
-              start_time: campaignDates.startDate,
-              end_time: campaignDates.endDate,
-            },
-          };
-        }
-      );
-      await _copyMultipleFacebookAdSets({ adSetCopyPayloadArray }, next);
-      await _deleteMultipleFacebookAdSets(adSetsList, next);
-      // TO DO: DELETE ORIGINAL ADSETS
-      // SEEMS LIKE AFTER THIS WE CAN UPDATE WITHOUT A PROBLEM
+
       // set date updated after everything works
       const updateCampaignPayload = {
         campaignId,
@@ -109,28 +87,11 @@ export const duration = {
     try {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
       const { campaignDates } = req.body.saveCampaignObject;
-      // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
-      // im assuming that they will always have the same data in citch reach and hence just pick the first
-      const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
-        {
-          campaignIds: facebookCampaigns as string[],
-          targetEdge: "adsets",
-          targetFields: "id",
-        },
+      await performCopyUpdateAndDeleteFacebookAdsets(
+        facebookCampaigns,
+        campaignDates,
         next
       );
-      const adSetIds = facebookAdSets[0].data;
-      if (!adSetIds[0]) {
-        return;
-      }
-      const { endDate, startDate } = campaignDates;
-      const adSetPayloadArray = adSetIds.map((adSetId: { id: string }) => {
-        return {
-          adSetId: adSetId.id,
-          duration: { endDate, startDate },
-        };
-      });
-      return await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
     } catch (error: any) {
       console.log(
         "Error Updating Campaign Duration",
@@ -139,4 +100,37 @@ export const duration = {
       return next(await $facebookErrorHandler(error));
     }
   },
+};
+
+const performCopyUpdateAndDeleteFacebookAdsets = async (
+  facebookCampaigns: string[],
+  campaignDates: { endDate: string; startDate: string },
+  next: NextFunction
+) => {
+  const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
+    {
+      campaignIds: facebookCampaigns as string[],
+      targetEdge: "adsets",
+      targetFields: "id,name",
+    },
+    next
+  );
+  const adSetsList = facebookAdSets[0].data;
+  if (!adSetsList[0]) {
+    return;
+  }
+  const adSetCopyPayloadArray = adSetsList.map(
+    (adSet: { id: string; name: string }) => {
+      return {
+        adSetId: adSet.id,
+        adSetName: adSet.name,
+        updateData: {
+          start_time: campaignDates.startDate,
+          end_time: campaignDates.endDate,
+        },
+      };
+    }
+  );
+  await _copyMultipleFacebookAdSets({ adSetCopyPayloadArray }, next);
+  await _deleteMultipleFacebookAdSets(adSetsList, next);
 };
