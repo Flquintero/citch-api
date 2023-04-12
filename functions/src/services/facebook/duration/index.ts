@@ -108,7 +108,7 @@ export const duration = {
   updateCampaignDuration: async function (req: Request, next: NextFunction) {
     try {
       const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      const { audience } = req.body.saveCampaignObject;
+      const { campaignDates } = req.body.saveCampaignObject;
       // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
       // im assuming that they will always have the same data in citch reach and hence just pick the first
       const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
@@ -123,16 +123,17 @@ export const duration = {
       if (!adSetIds[0]) {
         return;
       }
+      const { endDate, startDate } = campaignDates;
       const adSetPayloadArray = adSetIds.map((adSetId: { id: string }) => {
         return {
           adSetId: adSetId.id,
-          audience,
+          duration: { endDate, startDate },
         };
       });
       return await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
     } catch (error: any) {
       console.log(
-        "Error Updating Campaign Audience",
+        "Error Updating Campaign Duration",
         await $facebookErrorHandler(error)
       );
       return next(await $facebookErrorHandler(error));
