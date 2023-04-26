@@ -90,8 +90,19 @@ export const budget = {
   },
   updateCampaignBudget: async function (req: Request, next: NextFunction) {
     try {
-      //   const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      //   const { campaignDates } = req.body.saveCampaignObject;
+      const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
+      const { campaignBudget } = req.body.saveCampaignObject;
+      await _updateMultipleFacebookCampaigns(
+        {
+          campaignData: {
+            lifetime_budget:
+              parseInt(campaignBudget.budget) *
+              EFacebookBudgetHelper.multiplier,
+          },
+          facebookCampaigns,
+        },
+        next
+      );
     } catch (error: any) {
       console.log(
         "Error Updating Campaign Budget",
