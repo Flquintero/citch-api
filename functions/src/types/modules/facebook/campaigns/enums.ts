@@ -20,6 +20,10 @@ export enum EFacebookCampaignPlaceholder {
   budget = "100000", // $1000
 }
 
+export enum EFacebookBudgetHelper {
+  multiplier = 100, // facebook multiplies budget amount by 100
+}
+
 export enum EFacebookObjectiveValue {
   reach = "REACH",
   engagements = "POST_ENGAGEMENT",

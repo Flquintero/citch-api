@@ -100,25 +100,27 @@ export async function _createFacebookCampaign(
   }
 }
 
-// not being used for now as update only happens if there is only one objective so only one campaign
-// export async function _updateMultipleFacebookCampaigns(
-//   options: { campaignData: any; facebookCampaigns: string[] },
-//   next: NextFunction
-// ): Promise<boolean[] | void> {
-//   try {
-//     const { campaignData, facebookCampaigns } = options;
-//     campaignData.objective = campaignData.facebookObjectiveValues[0]; //because at this point we are only updating to another objective that only has 1 value in array;
-//     await Promise.all(
-//       facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
-//         campaignData.savedFacebookCampaignId = savedFacebookCampaignId;
-//         await _updateFacebookCampaign({ campaignData }, next);
-//       })
-//     );
-//   } catch (error: any) {
-//     console.log('Error Facebook Update Multiple Campaign', error);
-//     return next(await $facebookErrorHandler(error));
-//   }
-// }
+export async function _updateMultipleFacebookCampaigns(
+  options: { campaignData: any; facebookCampaigns: string[] },
+  next: NextFunction
+): Promise<boolean[] | void> {
+  try {
+    const { campaignData, facebookCampaigns } = options;
+    const updateFacebookCampaignPayload: IUpdateFacebookCampaignPayload = {
+      updateContent: campaignData,
+    };
+    await Promise.all(
+      facebookCampaigns.map(async (savedFacebookCampaignId: string) => {
+        updateFacebookCampaignPayload.savedFacebookCampaignId =
+          savedFacebookCampaignId;
+        await _updateFacebookCampaign(updateFacebookCampaignPayload, next);
+      })
+    );
+  } catch (error: any) {
+    console.log("Error Facebook Update Multiple Campaign", error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
 
 export async function _getFacebookCampaign(
   options: { campaignId: string; targetFields: string },
@@ -146,6 +148,7 @@ export async function _updateFacebookCampaign(
   try {
     const { savedFacebookCampaignId, updateContent } =
       updateFacebookCampaignPayload;
+    console.log("updateFacebookCampaignPayload", updateFacebookCampaignPayload);
     return await $apiRequest({
       method: "post",
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${savedFacebookCampaignId}`,

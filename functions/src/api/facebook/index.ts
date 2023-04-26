@@ -214,6 +214,45 @@ facebookRouter.put(
   }
 );
 
+facebookRouter.get(
+  "/campaign-budget/:campaignId",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.budget.getCampaignBudget(req, next));
+  }
+);
+
+facebookRouter.post(
+  "/campaign-budget",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.budget.saveCampaignBudget(req, next));
+  }
+);
+
+facebookRouter.put(
+  "/campaign-budget",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.budget.updateCampaignBudget(req, next));
+  }
+);
+
 facebookRouter.get("*", async (req: Request, res: Response) => {
   res.status(404).send("This route does not exist.");
 });

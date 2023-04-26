@@ -55,7 +55,7 @@ export interface IFacebookObjective {
 }
 
 export interface IUpdateFacebookCampaignPayload {
-  savedFacebookCampaignId: string;
+  savedFacebookCampaignId?: string;
   updateContent: IFacebookCampaignData;
 }
 
