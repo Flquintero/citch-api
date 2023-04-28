@@ -87,7 +87,7 @@ export const campaigns = {
   saveCampaignObjective: async function (req: Request, next: NextFunction) {
     try {
       const { saveCampaignObject, organizationId } = req.body;
-      const { campaignData, pageId, platform } = saveCampaignObject;
+      const { campaignData, pageId, postId, platform } = saveCampaignObject;
       const {
         facebookObjectiveValues,
         facebookObjectiveIdentifier,
@@ -108,6 +108,7 @@ export const campaigns = {
 
         facebookObjectiveIdentifier,
         facebookPage: pageId,
+        promotedPost: postId,
         platform,
         facebookAdAccount: (
           createdFacebookCampaigns as ICreateMultipleCampaignsResponse
@@ -185,6 +186,16 @@ export const campaigns = {
     } catch (error: any) {
       console.log("Error Facebook/DB Update Objective", error);
       return next(error);
+    }
+  },
+  publishCampaign: async function (req: Request, next: NextFunction) {
+    try {
+      const { savedDBFacebookCampaign } = req.body;
+      let { facebookCampaigns, facebookAdAccount } =
+        savedDBFacebookCampaign as IDBFacebookCampaign;
+    } catch (error: any) {
+      console.log("Error Facebook Publish Campaign", error);
+      return next(await $facebookErrorHandler(error));
     }
   },
 };

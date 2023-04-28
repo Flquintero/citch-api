@@ -253,6 +253,19 @@ facebookRouter.put(
   }
 );
 
+facebookRouter.post(
+  "/campaign-publish",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.campaigns.publishCampaign(req, next));
+  }
+);
+
 facebookRouter.get("*", async (req: Request, res: Response) => {
   res.status(404).send("This route does not exist.");
 });
