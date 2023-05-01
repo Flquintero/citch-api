@@ -5,7 +5,7 @@ import { _getCreateOrganizationPayload } from './helpers/payload-builder';
 // types
 import { NextFunction } from 'express';
 import { IUpdateObject, IReadObject } from '../../types/general/services';
-import { ICreateOrganization } from '../../types/services/organizations';
+import { ICreateOrganization } from '../../types/modules/organizations/interfaces';
 // declarations
 import { db } from '../../config/firebase';
 const ORGANIZATIONS_DB = db.collection('organizations');

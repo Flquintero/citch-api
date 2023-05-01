@@ -1,6 +1,6 @@
 // types
 import { Request, Response, NextFunction } from 'express';
-import { IUser } from '../../types/services/users';
+import { IUser } from '../../types/modules/users/interfaces';
 // services
 import usersService from '../../services/users';
 import organizationsService from '../../services/organizations';

@@ -1,7 +1,7 @@
 // helpers
-import { $apiRequest } from '../../../utils/https-call';
-import { $facebookErrorHandler } from '../../../utils/error-handler';
-import { $stringifyParams } from '../../../utils/stringify-params';
+import { $apiRequest } from '../../../../utils/https-call';
+import { $facebookErrorHandler } from '../../../../utils/error-handler';
+import { $stringifyParams } from '../../../../utils/stringify-params';
 
 // types
 import { NextFunction } from 'express';
@@ -9,8 +9,8 @@ import {
   IFacebookPage,
   IFacebookPageCheckInListOfPagesData,
   IFacebookPageLinkedStatus,
-  FacebookPageLinkedStatus,
-} from '../../../types/services/facebook';
+} from '../../../../types/modules/facebook/pages/interfaces';
+import { EFacebookPageLinkedStatus } from '../../../../types/modules/facebook/pages/enums';
 
 //constants
 import {
@@ -18,7 +18,8 @@ import {
   FACEBOOK_SYSTEM_USER_ID,
   FACEBOOK_BUSINESS_ID,
   FACEBOOK_SYSTEM_USER_TOKEN,
-} from './facebook-constants';
+  FACEBOOK_API_VERSION,
+} from '../../helpers/facebook-constants';
 
 export async function _getFacebookPage(
   options: { pageId: string; access_token: string; fields: string },
@@ -32,10 +33,30 @@ export async function _getFacebookPage(
       access_token,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${pageId}?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log('Error Get Facebook Page', error);
+    return next(await $facebookErrorHandler(error));
+  }
+}
+export async function _getUserPages(
+  options: { userId: string; access_token: string; fields: string },
+  next: NextFunction
+): Promise<IFacebookPage[] | void> {
+  try {
+    const { access_token, fields, userId } = options;
+    const stringifiedParams = await $stringifyParams({
+      fields,
+      access_token,
+    });
+    // TO DO: Add paging to this, ad page limit and create paging ui and param for current page
+    const pagesResponse = await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${userId}/accounts?${stringifiedParams}`,
+    });
+    return pagesResponse.data;
+  } catch (error: any) {
+    console.log('Error Get Facebook Pages', error);
     return next(await $facebookErrorHandler(error));
   }
 }
@@ -48,7 +69,6 @@ export async function _checkPageLinkedToAppBusinessManager(
     const pageLimit = 15;
     const { pageId } = options;
     const linkedPages = await _getLinkedPagesToAppBusinessManager({ pageLimit }, next);
-    console.log('linkedPages', linkedPages);
     const checkData: IFacebookPageCheckInListOfPagesData = {
       pageId,
       pages: linkedPages.data,
@@ -57,16 +77,13 @@ export async function _checkPageLinkedToAppBusinessManager(
       pagesNext: linkedPages.paging.next,
       currentIndex: 0,
     };
-    return await __checkForChosenPageinListOfPages(checkData);
+    return await __checkForChosenPageinListOfPages(checkData, next);
   } catch (error: any) {
     console.log('Error Check Page Linked to Business Manager', error);
     return next(await $facebookErrorHandler(error));
   }
 }
-export async function _getLinkedPagesToAppBusinessManager(
-  options: { pageLimit: number },
-  next: NextFunction
-) {
+export async function _getLinkedPagesToAppBusinessManager(options: { pageLimit: number }, next: NextFunction) {
   try {
     const { pageLimit } = options;
     const stringifiedParams = await $stringifyParams({
@@ -75,7 +92,7 @@ export async function _getLinkedPagesToAppBusinessManager(
       access_token: FACEBOOK_SYSTEM_USER_TOKEN,
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
     });
   } catch (error: any) {
     console.log('Error Get Linked Pages to Business Manager', error);
@@ -96,13 +113,10 @@ export async function _connectUserPageToAppBusinessManager(
     });
     return await $apiRequest({
       method: 'post',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
       data: {
         page_id: pageId,
-        permitted_tasks: ['MANAGE'],
+        permitted_tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
       },
     });
   } catch (error: any) {
@@ -124,15 +138,15 @@ export async function _connectSystemUserToUserPage(
     });
     return await $apiRequest({
       method: 'post',
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,
       data: {
-        tasks: ['MANAGE'],
+        tasks: ['MANAGE', 'ADVERTISE', 'ANALYZE'],
         user: FACEBOOK_SYSTEM_USER_ID,
         business: FACEBOOK_BUSINESS_ID,
       },
     });
   } catch (error: any) {
-    console.log('Facebook Error connecting System User to Page', error);
+    console.log('Facebook Error connecting System User to Page', error.data);
     return next(await $facebookErrorHandler(error));
   }
 }
@@ -154,9 +168,9 @@ export async function _checkSystemUserConnectedToUserPage(
       pagesNext: assignedUserPages.paging.next,
       currentIndex: 0,
     };
-    return await __checkForChosenPageinListOfPages(checkData);
+    return await __checkForChosenPageinListOfPages(checkData, next);
   } catch (error: any) {
-    console.log('Facebook Error connecting System User to Page', error);
+    console.log('Facebook Error Checking connecting System User to Page', error.data);
     return next(await $facebookErrorHandler(error));
   }
 }
@@ -174,7 +188,7 @@ export async function _getSystemUserAssignedFacebookPages(
       summary: 'total_count',
     });
     return await $apiRequest({
-      url: `${FACEBOOK_GRAPH_URL}/${process.env.FACEBOOK_API_VERSION}/${FACEBOOK_SYSTEM_USER_ID}/assigned_pages?${stringifiedParams}`,
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_SYSTEM_USER_ID}/assigned_pages?${stringifiedParams}`,
       data: {
         tasks: ['MANAGE'],
         user: FACEBOOK_SYSTEM_USER_ID,
@@ -191,37 +205,42 @@ export async function _getSystemUserAssignedFacebookPages(
 
 // checks to see if a page is included in the list of pages returned from a next url
 async function __checkForChosenPageinListOfPages(
-  options: IFacebookPageCheckInListOfPagesData
-): Promise<IFacebookPageLinkedStatus> {
-  const { pageId, pages, pagesTotalCount, pageLimit, pagesNext, currentIndex } = options;
-  const pagingTotal = Math.ceil(pagesTotalCount / pageLimit);
-  const pageIncludedArray = pages.filter((page: IFacebookPage) => {
-    return page.id === pageId;
-  });
-  const pageIncluded = !!pageIncludedArray.length;
-  // if doesnt find on current search page
-  if (!pageIncluded) {
-    // if subsequent page available
-    if (currentIndex < pagingTotal && pagesNext) {
-      const pagesResponse = await $apiRequest({
-        url: pagesNext,
-      });
-      const newPages = pagesResponse.data;
-      const searchData = {
-        pageId,
-        pages: newPages.data,
-        pagesTotalCount: newPages.summary.total_count,
-        pageLimit,
-        pagesNext: newPages.paging.next,
-        currentIndex: currentIndex + 1,
-      };
-      return __checkForChosenPageinListOfPages(searchData);
-      //if no other page available return that we didnt find it
+  options: IFacebookPageCheckInListOfPagesData,
+  next: NextFunction
+): Promise<IFacebookPageLinkedStatus | void> {
+  try {
+    const { pageId, pages, pagesTotalCount, pageLimit, pagesNext, currentIndex } = options;
+    const pagingTotal = Math.ceil(pagesTotalCount / pageLimit);
+    const pageIncludedArray = pages.filter((page: IFacebookPage) => {
+      return page.id === pageId;
+    });
+    const pageIncluded = !!pageIncludedArray.length;
+    // if doesnt find on current search page
+    if (!pageIncluded) {
+      // if subsequent page available
+      if (currentIndex < pagingTotal && pagesNext) {
+        const newPages = await $apiRequest({
+          url: pagesNext,
+        });
+        const searchData = {
+          pageId,
+          pages: newPages.data,
+          pagesTotalCount: newPages.summary.total_count,
+          pageLimit,
+          pagesNext: newPages.paging.next,
+          currentIndex: currentIndex + 1,
+        };
+        return __checkForChosenPageinListOfPages(searchData, next);
+        //if no other page available return that we didnt find it
+      } else {
+        return { status: EFacebookPageLinkedStatus.not_linked };
+      }
+      // if finds it on current page
     } else {
-      return { status: FacebookPageLinkedStatus.not_linked };
+      return { status: EFacebookPageLinkedStatus.linked };
     }
-    // if finds it on current page
-  } else {
-    return { status: FacebookPageLinkedStatus.linked };
+  } catch (error: any) {
+    console.log('Error Checking Page is in List', error);
+    return next(await $facebookErrorHandler(error));
   }
 }

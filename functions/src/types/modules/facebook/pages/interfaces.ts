@@ -1,10 +1,4 @@
-export interface IFacebookTokenData {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  user_id: string;
-  app_id: string;
-}
+import { EFacebookPageLinkedStatus } from './enums';
 
 export interface IFacebookPageCheckInListOfPagesData {
   pageId: string;
@@ -27,21 +21,5 @@ export interface IFacebookPicture {
 }
 
 export interface IFacebookPageLinkedStatus {
-  status: FacebookPageLinkedStatus;
-}
-
-export enum FacebookPageLinkedMessage {
-  already_linked = 'Page Already Connected',
-  link_success = 'Page Connection Success',
-}
-
-export enum FacebookPageLinkedStatus {
-  not_linked, // 0
-  linked, // 1
-}
-
-export enum FacebookConnectionStatus {
-  disconnected, // 0
-  connected, // 1
-  expired, // 2
+  status: EFacebookPageLinkedStatus;
 }

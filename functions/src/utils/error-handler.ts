@@ -11,16 +11,24 @@ let $firestormErrorHandler = async (error: any) => {
 };
 let $facebookErrorHandler = async (error: any) => {
   let returnError = error;
-  if (error.data) {
-    if (error.data.error.error_user_msg) {
-      returnError = error.data.error.error_user_msg;
-    } else if (error.data.error.message) {
-      returnError = error.data.error.message;
-    }
+  if (error.response) {
+    returnError = {
+      code: error.response.status,
+      title: error.response.data.error.error_user_title,
+      message: error.response.data.error.error_user_msg,
+    };
   }
+  console.log("ERROR HANDLER FB", error.response.data.error);
   return returnError;
 };
-let $genericErrorHandler = async (error: { [property: string]: string | number }) => {
+let $genericErrorHandler = async (error: {
+  [property: string]: string | number;
+}) => {
   return { ...error };
 };
-export { $axiosErrorHandler, $firestormErrorHandler, $genericErrorHandler, $facebookErrorHandler };
+export {
+  $axiosErrorHandler,
+  $firestormErrorHandler,
+  $genericErrorHandler,
+  $facebookErrorHandler,
+};
