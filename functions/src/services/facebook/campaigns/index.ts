@@ -220,6 +220,7 @@ export const campaigns = {
       if (!adSetsList[0]) {
         return;
       }
+      // the multiple ads helper is different format then the rest that uses payload array but because there is not much to it
       await _createMultipleFacebookAds(
         {
           adSets: adSetsList,
