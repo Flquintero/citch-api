@@ -1,20 +1,23 @@
 // types
 import { Request, Response, NextFunction } from 'express';
-import { IUser } from '../../types/services/users';
+import { IUser } from '../../types/modules/users/interfaces';
 // services
 import usersService from '../../services/users';
+import organizationsService from '../../services/organizations';
 // handlers
 import { $genericErrorHandler } from '../../utils/error-handler';
 
-const $getUserOrganizationId = async function (req: Request, res: Response, next: NextFunction) {
+const $getUserOrganization = async function (req: Request, res: Response, next: NextFunction) {
   try {
     const id = req.body.uid;
     const user = await usersService.read({ id }, next);
-    req.body.organizationId = (user as IUser).organization.id;
+    const organizationId = (user as IUser).organization.id;
+    req.body.organizationId = organizationId;
+    req.body.organization = await organizationsService.read({ id: organizationId }, next);
     return next();
   } catch (error: any) {
     console.log('Firebase id token verification error', error);
     return next(await $genericErrorHandler({ code: 401, message: 'Unauthorized' }));
   }
 };
-export { $getUserOrganizationId };
+export { $getUserOrganization };

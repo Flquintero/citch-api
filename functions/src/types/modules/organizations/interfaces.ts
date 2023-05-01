@@ -1,8 +1,6 @@
 import { DocumentData, Timestamp } from 'firebase-admin/firestore';
-
-export enum OrganizationRoles {
-  'admin',
-}
+import { IFacebookTokenData } from '../facebook/auth/interfaces';
+import { EOrganizationRoles } from './enums';
 
 export interface ICreateOrganization extends ReadableStream<Uint8Array> {
   email: string;
@@ -20,7 +18,8 @@ export interface IOrganization extends DocumentData {
   updatedOn: Timestamp;
   email: string;
   enabled: boolean;
+  facebookData?: IFacebookTokenData | null;
   roles: {
-    [uid: string]: OrganizationRoles; // add an enum possibilities maybe?
+    [uid: string]: EOrganizationRoles; // add an enum possibilities maybe?
   };
 }

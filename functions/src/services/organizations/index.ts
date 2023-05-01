@@ -4,13 +4,22 @@ import { $getDocumentId } from '../../utils/firebase/firestorm/firebase-firestor
 import { _getCreateOrganizationPayload } from './helpers/payload-builder';
 // types
 import { NextFunction } from 'express';
-import { IUpdateObject } from '../../types/general/services';
-import { ICreateOrganization } from '../../types/services/organizations';
+import { IUpdateObject, IReadObject } from '../../types/general/services';
+import { ICreateOrganization } from '../../types/modules/organizations/interfaces';
 // declarations
 import { db } from '../../config/firebase';
 const ORGANIZATIONS_DB = db.collection('organizations');
 
 export default {
+  read: async function (options: IReadObject, next: NextFunction) {
+    try {
+      const { id } = options;
+      const organization = await ORGANIZATIONS_DB.doc(id).get();
+      return organization.data();
+    } catch (error: any) {
+      return next(await $firestormErrorHandler(error));
+    }
+  },
   create: async function (options: ICreateOrganization, next: NextFunction) {
     try {
       const organization = await ORGANIZATIONS_DB.add(await _getCreateOrganizationPayload(options));
