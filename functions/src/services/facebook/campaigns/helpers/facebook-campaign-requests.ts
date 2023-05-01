@@ -148,7 +148,6 @@ export async function _updateFacebookCampaign(
   try {
     const { savedFacebookCampaignId, updateContent } =
       updateFacebookCampaignPayload;
-    console.log("updateFacebookCampaignPayload", updateFacebookCampaignPayload);
     return await $apiRequest({
       method: "post",
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${savedFacebookCampaignId}`,

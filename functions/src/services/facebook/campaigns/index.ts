@@ -12,10 +12,15 @@ import {
 import {
   _createMultipleFacebookCampaigns,
   _createFacebookCampaign,
+  _updateMultipleFacebookCampaigns,
   _updateFacebookCampaign,
   _deleteMultipleFacebookCampaigns,
   _deleteFacebookCampaign,
+  _getMultipleFacebookCampaignEdge,
 } from "./helpers/facebook-campaign-requests";
+import { _updateMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
+import { _createFacebookAdCreative } from "../helpers/adcreative-helpers/facebook-adcreative-requests";
+import { _createMultipleFacebookAds } from "../helpers/ad-helpers/facebook-ad-requests";
 
 // Types
 import {
@@ -26,6 +31,9 @@ import {
   IUpdateFacebookCampaignPayload,
 } from "../../../types/modules/facebook/campaigns/interfaces";
 import {
+  EFacebookAdSetStatus,
+  EFacebookAdStatus,
+  EFacebookCampaignStatus,
   EFacebookObjectiveIdentifier,
   EFacebookObjectiveValue,
 } from "../../../types/modules/facebook/campaigns/enums";
@@ -191,8 +199,50 @@ export const campaigns = {
   publishCampaign: async function (req: Request, next: NextFunction) {
     try {
       const { savedDBFacebookCampaign } = req.body;
-      let { facebookCampaigns, facebookAdAccount } =
+      const { promotedPost, facebookAdAccount, facebookCampaigns } =
         savedDBFacebookCampaign as IDBFacebookCampaign;
+      const adCreative = await _createFacebookAdCreative(
+        {
+          postId: promotedPost,
+          adAccount: facebookAdAccount,
+        },
+        next
+      );
+      const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
+        {
+          campaignIds: facebookCampaigns as string[],
+          targetEdge: "adsets",
+          targetFields: "id",
+        },
+        next
+      );
+      const adSetsList = facebookAdSets[0].data;
+      if (!adSetsList[0]) {
+        return;
+      }
+      await _createMultipleFacebookAds(
+        {
+          adSets: adSetsList,
+          adCreative,
+          adAccount: facebookAdAccount as string,
+          status: EFacebookAdStatus.active,
+        },
+        next
+      );
+      const adSetPayloadArray = adSetsList.map((adSetId: { id: string }) => {
+        return {
+          adSetId: adSetId.id,
+          status: EFacebookAdSetStatus.active,
+        };
+      });
+      await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
+      return await _updateMultipleFacebookCampaigns(
+        {
+          campaignData: { status: EFacebookCampaignStatus.active },
+          facebookCampaigns: facebookCampaigns as string[],
+        },
+        next
+      );
     } catch (error: any) {
       console.log("Error Facebook Publish Campaign", error);
       return next(await $facebookErrorHandler(error));

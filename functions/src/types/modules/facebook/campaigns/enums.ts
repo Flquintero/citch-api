@@ -69,6 +69,11 @@ export enum EFacebookAdSetStatus {
   archived = "ARCHIVED",
 }
 
+export enum EFacebookAdStatus {
+  active = "ACTIVE",
+  paused = "PAUSED",
+}
+
 export enum EFacebookAdSetBillingEvent {
   impressions = "IMPRESSIONS",
   app_installs = "APP_INSTALLS",

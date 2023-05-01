@@ -89,7 +89,7 @@ export async function _updateMultipleFacebookAdSets(
 
 export async function _updateFacebookAdSet(options: any, next: NextFunction) {
   try {
-    const { adSetId, audience, duration } = options;
+    const { adSetId, audience, duration, status } = options;
     const adsetBody = {
       ...(audience
         ? {
@@ -114,6 +114,7 @@ export async function _updateFacebookAdSet(options: any, next: NextFunction) {
       ...(duration
         ? { start_time: duration.startDate, end_time: duration.endDate }
         : null),
+      ...(status ? status : null),
     };
     return await $apiRequest({
       method: "POST",
