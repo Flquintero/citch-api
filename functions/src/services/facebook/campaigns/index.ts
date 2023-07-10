@@ -208,6 +208,7 @@ export const campaigns = {
         },
         next
       );
+      console.log("adCreative", adCreative);
       const facebookAdSets: any = await _getMultipleFacebookCampaignEdge(
         {
           campaignIds: facebookCampaigns as string[],

@@ -72,10 +72,8 @@ facebookRouter.post(
     $getFacebookPost,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
-    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(
-      req,
-      next
-    );
+    const connectedStatusMessage =
+      await facebookService.pages.checkLinkedUserAccounts(req, next);
     const postId = req.body.facebookPostData?.id;
     res.json({
       status: connectedStatusMessage,
