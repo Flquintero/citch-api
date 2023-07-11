@@ -1,6 +1,6 @@
 export enum EFacebookPageLinkedMessage {
-  already_linked = 'Page Already Connected',
-  link_success = 'Page Connection Success',
+  already_linked = "Page Already Connected",
+  link_success = "Page Connection Success",
 }
 
 export enum EFacebookPageLinkedStatus {
