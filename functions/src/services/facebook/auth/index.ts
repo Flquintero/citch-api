@@ -1,10 +1,10 @@
 // services
-import organizationsService from '../../../services/organizations';
+import organizationsService from "../../../services/organizations";
 
 // Helpers
-import { $facebookErrorHandler } from '../../../utils/error-handler';
-import { $getRandomHash } from '../../../utils/auth-state-hash-creator';
-import { $stringifyParams } from '../../../utils/stringify-params';
+import { $facebookErrorHandler } from "../../../utils/error-handler";
+import { $getRandomHash } from "../../../utils/auth-state-hash-creator";
+import { $stringifyParams } from "../../../utils/stringify-params";
 
 // Local Helpers
 import {
@@ -12,14 +12,14 @@ import {
   _appAccessToken,
   _longLivedUserAccessToken,
   _userAccessToken,
-} from './helpers/facebook-user-auth-handler';
+} from "./helpers/facebook-user-auth-handler";
 
 // Types
-import { NextFunction, Request } from 'express';
-import { EFacebookConnectionStatus } from '../../../types/modules/facebook/auth/enums';
+import { NextFunction, Request } from "express";
+import { EFacebookConnectionStatus } from "../../../types/modules/facebook/auth/enums";
 
 // Constants
-import { FACEBOOK_URL } from '../helpers/facebook-constants';
+import { FACEBOOK_URL } from "../helpers/facebook-constants";
 
 export const auth = {
   getFacebookConsentUrl: async function (options: Request, next: NextFunction) {
@@ -29,19 +29,19 @@ export const auth = {
         client_id: process.env.FACEBOOK_APP_ID,
         redirect_uri: `${process.env.REDIRECT_URI}/facebook`,
         scope: [
-          'email',
-          'ads_management',
-          'ads_read',
-          'business_management',
-          'pages_read_engagement',
-          'instagram_basic',
-          'pages_manage_ads', // revoked need new
-          'public_profile',
-          'pages_show_list',
-          'pages_manage_metadata', // need to ask for it in review
-        ].join(','), // comma seperated string
-        response_type: 'code',
-        auth_type: 'rerequest',
+          "email",
+          "ads_management",
+          "ads_read",
+          "business_management",
+          "pages_read_engagement",
+          "instagram_basic",
+          "pages_manage_ads",
+          "public_profile",
+          "pages_show_list",
+          "pages_manage_metadata", // need to ask for it in review
+        ].join(","), // comma seperated string
+        response_type: "code",
+        auth_type: "rerequest",
         state,
       });
       return {
@@ -60,7 +60,10 @@ export const auth = {
         // app access token - available in the app dashboard but need to get it dinamically in case it is expired
         const appAccessTokenData = await _appAccessToken(next);
         // exchange shortlived token for a long lived one for user
-        const longLivedAccessTokenData = await _longLivedUserAccessToken(userAuthData.access_token, next);
+        const longLivedAccessTokenData = await _longLivedUserAccessToken(
+          userAuthData.access_token,
+          next
+        );
         // get all the token data to populate the data we are saving to DB
         const userAccessTokenData = await _userAccessToken(
           longLivedAccessTokenData.access_token,
@@ -82,7 +85,7 @@ export const auth = {
         return next(error);
       }
     } else {
-      return new Error('Error Connecting to Platform');
+      return new Error("Error Connecting to Platform");
     }
   },
   checkUserAuthToken: async function (req: Request, next: NextFunction) {
@@ -109,7 +112,7 @@ export const auth = {
           await organizationsService.update(updateObject, next);
           return {
             status: EFacebookConnectionStatus.expired,
-            message: 'Token has expired. Please Reconnect Again',
+            message: "Token has expired. Please Reconnect Again",
           };
         }
       }
