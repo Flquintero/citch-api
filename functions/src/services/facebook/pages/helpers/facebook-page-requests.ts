@@ -118,6 +118,10 @@ export async function _connectUserPageToAppBusinessManager(
     const stringifiedParams = await $stringifyParams({
       access_token: user_access_token,
     });
+    console.log(
+      "url adding to business manager",
+      `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`
+    );
     return await $apiRequest({
       method: "post",
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${FACEBOOK_BUSINESS_ID}/client_pages?${stringifiedParams}`,
@@ -144,6 +148,10 @@ export async function _connectSystemUserToUserPage(
       access_token: FACEBOOK_SYSTEM_USER_TOKEN,
     });
     console.log("pageId", pageId);
+    console.log(
+      "url",
+      `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`
+    );
     return await $apiRequest({
       method: "post",
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${pageId}/assigned_users?${stringifiedParams}`,

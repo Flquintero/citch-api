@@ -83,6 +83,28 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
+  "/link-accounts",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+    $getFacebookPost,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(
+      req,
+      next
+    );
+    const postId = req.body.facebookPostData?.id;
+    res.json({
+      status: connectedStatusMessage,
+      ...(postId ? { postId: postId } : null),
+    });
+  }
+);
+
+facebookRouter.post(
   "/campaign-objective",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {

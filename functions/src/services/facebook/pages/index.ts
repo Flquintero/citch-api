@@ -28,15 +28,13 @@ export const pages = {
     try {
       const { facebookPageData } = req.body;
       const pageId = facebookPageData.id;
-      //const { access_token } = req.body.organization.facebookData;
 
       // Allow Citch page through, it doesnt list it in options
       // Alow lisa's pizza test account through
       if (pageId === FACEBOOK_APP_PAGE_ID || pageId === "109089565530450") {
-        return EFacebookPageLinkedMessage.already_linked;
+        return EFacebookPageLinkedStatus.linked;
       }
       // End of Citch hack
-
       const pageConnectData = {
         pageId,
         page_access_token: (facebookPageData as IFacebookPage)
@@ -46,7 +44,6 @@ export const pages = {
         pageConnectData,
         next
       );
-      console.log("pageLinkedObject", pageLinkedObject);
       if (pageLinkedObject?.status === EFacebookPageLinkedStatus.not_linked) {
         return EFacebookPageLinkedStatus.not_linked;
       } else {
@@ -62,48 +59,13 @@ export const pages = {
       const { facebookPageData } = req.body;
       const pageId = facebookPageData.id;
       const { access_token } = req.body.organization.facebookData;
-
-      // // Allow Citch page through, it doesnt list it in options
-      // // Alow lisa's pizza test account through
-      // if (pageId === FACEBOOK_APP_PAGE_ID || pageId === "109089565530450") {
-      //   return EFacebookPageLinkedMessage.already_linked;
-      // }
-      // // End of Citch hack
-
-      // const pageConnectData = {
-      //   pageId,
-      //   page_access_token: (facebookPageData as IFacebookPage)
-      //     .access_token as string,
-      // };
-      // const pageLinkedObject = await _checkPageLinkedToAppBusinessManager(
-      //   pageConnectData,
-      //   next
-      // );
-      // console.log("pageLinkedObject", pageLinkedObject);
-      // if (pageLinkedObject?.status === EFacebookPageLinkedStatus.not_linked) {
       await _connectUserPageToAppBusinessManager(
         { user_access_token: access_token, pageId },
         next
       );
-
       //CONNECT SYSTEM USER TO PAGE BECAUSE IF WE NEED TO CONNECT TO BIZ MANAGER MEANS PAGE NOT CONNECTED
       await _connectSystemUserToUserPage({ pageId }, next);
       return EFacebookPageLinkedMessage.link_success;
-      // }
-
-      // else {
-      //   //CHECK TO SEE IF SYSTEM USER HAS PAGE IF NOT CONNECT IT (IT SHOULD BE BECAUSE OF THE ABOVE PROCESS)
-      //   const systemUserConnected = await _checkSystemUserConnectedToUserPage(
-      //     { pageId },
-      //     next
-      //   );
-      //   if (
-      //     systemUserConnected?.status === EFacebookPageLinkedStatus.not_linked
-      //   ) {
-      //     await _connectSystemUserToUserPage({ pageId }, next);
-      //   }
-      //   return EFacebookPageLinkedMessage.already_linked;
-      // }
     } catch (error: any) {
       console.log("Error Facebook Linking Accounts", error.data);
       return next(await $facebookErrorHandler(error));
