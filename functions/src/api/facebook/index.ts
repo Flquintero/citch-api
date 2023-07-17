@@ -63,7 +63,7 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
-  "/confirm-accounts",
+  "/confirm-facebook-account",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -83,7 +83,7 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
-  "/link-accounts",
+  "/link-facebook-account",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -100,6 +100,52 @@ facebookRouter.post(
     res.json({
       status: connectedStatusMessage,
       ...(postId ? { postId: postId } : null),
+    });
+  }
+);
+
+facebookRouter.post(
+  "/confirm-instagram-account",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    const connectedStatusMessage =
+      await facebookService.pages.checkLinkedUserAccounts(req, next);
+    const instagramAccountId =
+      req.body.facebookPageData?.connected_instagram_account?.id;
+    res.json({
+      status: connectedStatusMessage,
+      ...(instagramAccountId
+        ? { instagramAccountId: instagramAccountId }
+        : null),
+    });
+  }
+);
+
+facebookRouter.post(
+  "/link-instagram-account",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(
+      req,
+      next
+    );
+    const instagramAccountId =
+      req.body.facebookPageData?.connected_instagram_account?.id;
+    res.json({
+      status: connectedStatusMessage,
+      ...(instagramAccountId
+        ? { instagramAccountId: instagramAccountId }
+        : null),
     });
   }
 );
