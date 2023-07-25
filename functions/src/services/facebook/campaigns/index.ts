@@ -95,7 +95,8 @@ export const campaigns = {
   saveCampaignObjective: async function (req: Request, next: NextFunction) {
     try {
       const { saveCampaignObject, organizationId } = req.body;
-      const { campaignData, pageId, postId, platform } = saveCampaignObject;
+      const { campaignData, pageId, postId, platform, instagramAccountId } =
+        saveCampaignObject;
       const {
         facebookObjectiveValues,
         facebookObjectiveIdentifier,
@@ -117,6 +118,9 @@ export const campaigns = {
         facebookObjectiveIdentifier,
         facebookPage: pageId,
         promotedPost: postId,
+        ...(instagramAccountId
+          ? { instagramAccount: instagramAccountId }
+          : null),
         platform,
         facebookAdAccount: (
           createdFacebookCampaigns as ICreateMultipleCampaignsResponse

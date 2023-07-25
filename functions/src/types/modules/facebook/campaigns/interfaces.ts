@@ -40,6 +40,7 @@ export interface IDBFacebookCampaign extends DocumentData {
   organizationPathId?: string;
   facebookPage?: string;
   promotedPost?: string;
+  instagramAccount?: string;
   platform?: string;
 }
 export interface IDBUpdateFacebookCampaignPayload {

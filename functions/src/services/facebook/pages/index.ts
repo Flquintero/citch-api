@@ -11,13 +11,14 @@ import {
   _getUserPages,
 } from "./helpers/facebook-page-requests";
 import { _getFacebookPost } from "./helpers/facebook-post-requests";
+import { _getUserInstagramPosts } from "./helpers/instagram-post-requests";
 
 // Types
 import { NextFunction, Request } from "express";
 import { IFacebookPage } from "../../../types/modules/facebook/pages/interfaces";
 import {
   EFacebookPageLinkedStatus,
-  EFacebookPageLinkedMessage,
+  //EFacebookPageLinkedMessage,
 } from "../../../types/modules/facebook/pages/enums";
 
 // Constants
@@ -30,9 +31,14 @@ export const pages = {
       const pageId = facebookPageData.id;
 
       // Allow Citch page through, it doesnt list it in options
-      // Alow lisa's pizza test account through
-      if (pageId === FACEBOOK_APP_PAGE_ID || pageId === "109089565530450") {
+      if (pageId === FACEBOOK_APP_PAGE_ID) {
         return EFacebookPageLinkedStatus.linked;
+      }
+      // for now testing
+      // Mimic that Dino's is not connected
+      // Alow lucy's pizza test account through
+      if (pageId === "100919988703477" || pageId === "109089565530450") {
+        return EFacebookPageLinkedStatus.not_linked;
       }
       // End of Citch hack
       const pageConnectData = {
@@ -59,13 +65,16 @@ export const pages = {
       const { facebookPageData } = req.body;
       const pageId = facebookPageData.id;
       const { access_token } = req.body.organization.facebookData;
+      if (pageId === "100919988703477" || pageId === "109089565530450") {
+        return EFacebookPageLinkedStatus.linked;
+      }
       await _connectUserPageToAppBusinessManager(
         { user_access_token: access_token, pageId },
         next
       );
       //CONNECT SYSTEM USER TO PAGE BECAUSE IF WE NEED TO CONNECT TO BIZ MANAGER MEANS PAGE NOT CONNECTED
       await _connectSystemUserToUserPage({ pageId }, next);
-      return EFacebookPageLinkedMessage.link_success;
+      return EFacebookPageLinkedStatus.linked;
     } catch (error: any) {
       console.log("Error Facebook Linking Accounts", error.data);
       return next(await $facebookErrorHandler(error));
@@ -97,6 +106,19 @@ export const pages = {
       const { access_token, user_id } = req.body.organization.facebookData;
       return await _getUserPages(
         { userId: user_id, access_token, fields: `id,name,picture` },
+        next
+      );
+    } catch (error: any) {
+      console.log("Error Facebook Get User Pages", error);
+      return next(await $facebookErrorHandler(error));
+    }
+  },
+  getUserInstagramPosts: async function (req: Request, next: NextFunction) {
+    try {
+      const { access_token } = req.body.organization.facebookData;
+      const { instagramAccountId } = req.body;
+      return await _getUserInstagramPosts(
+        { instagramAccountId, access_token, fields: `id,name,picture` },
         next
       );
     } catch (error: any) {
