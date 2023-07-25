@@ -4,6 +4,7 @@ import { $idTokenVerification } from "../../middleware/firebase/user-token/fireb
 import { $getUserOrganization } from "../../middleware/organizations/fetch-user-organization";
 import { $getFacebookPage } from "../../middleware/facebook/fetch-user-facebook-page";
 import { $getFacebookPost } from "../../middleware/facebook/fetch-user-facebook-post";
+import { $getInstagramPost } from "../../middleware/facebook/fetch-user-instagram-post";
 import { $getDBFacebookCampaign } from "../../middleware/facebook/fetch-db-facebook-campaign";
 // services
 import facebookService from "../../services/facebook";
@@ -111,6 +112,7 @@ facebookRouter.post(
     $idTokenVerification,
     $getUserOrganization,
     $getFacebookPage,
+    $getInstagramPost,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
     const connectedStatusMessage =
@@ -133,6 +135,7 @@ facebookRouter.post(
     $idTokenVerification,
     $getUserOrganization,
     $getFacebookPage,
+    $getInstagramPost,
   ],
   async (req: Request, res: Response, next: NextFunction) => {
     const connectedStatusMessage = await facebookService.pages.linkUserAccounts(
