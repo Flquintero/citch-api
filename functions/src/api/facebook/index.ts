@@ -4,6 +4,7 @@ import { $idTokenVerification } from "../../middleware/firebase/user-token/fireb
 import { $getUserOrganization } from "../../middleware/organizations/fetch-user-organization";
 import { $getFacebookPage } from "../../middleware/facebook/fetch-user-facebook-page";
 import { $getFacebookPost } from "../../middleware/facebook/fetch-user-facebook-post";
+import { $getInstagramPost } from "../../middleware/facebook/fetch-user-instagram-post";
 import { $getDBFacebookCampaign } from "../../middleware/facebook/fetch-db-facebook-campaign";
 // services
 import facebookService from "../../services/facebook";
@@ -63,7 +64,7 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
-  "/confirm-accounts",
+  "/confirm-facebook-account",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -83,7 +84,7 @@ facebookRouter.post(
 );
 
 facebookRouter.post(
-  "/link-accounts",
+  "/link-facebook-account",
   [
     $appCheckVerification,
     $idTokenVerification,
@@ -100,6 +101,54 @@ facebookRouter.post(
     res.json({
       status: connectedStatusMessage,
       ...(postId ? { postId: postId } : null),
+    });
+  }
+);
+
+facebookRouter.post(
+  "/confirm-instagram-account",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+    $getInstagramPost,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    const connectedStatusMessage =
+      await facebookService.pages.checkLinkedUserAccounts(req, next);
+    const instagramAccountId =
+      req.body.facebookPageData?.connected_instagram_account?.id;
+    res.json({
+      status: connectedStatusMessage,
+      ...(instagramAccountId
+        ? { instagramAccountId: instagramAccountId }
+        : null),
+    });
+  }
+);
+
+facebookRouter.post(
+  "/link-instagram-account",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getFacebookPage,
+    $getInstagramPost,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    const connectedStatusMessage = await facebookService.pages.linkUserAccounts(
+      req,
+      next
+    );
+    const instagramAccountId =
+      req.body.facebookPageData?.connected_instagram_account?.id;
+    res.json({
+      status: connectedStatusMessage,
+      ...(instagramAccountId
+        ? { instagramAccountId: instagramAccountId }
+        : null),
     });
   }
 );
