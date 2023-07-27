@@ -26,7 +26,7 @@ export async function _getUserInstagramPosts(
       url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${instagramAccountId}/media?${stringifiedParams}`,
     });
   } catch (error: any) {
-    console.log("Error Facebook Get Post", error);
+    console.log("Error Instagram Get Posts", error);
     return next(await $facebookErrorHandler(error));
   }
 }

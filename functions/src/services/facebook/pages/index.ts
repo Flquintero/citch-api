@@ -34,12 +34,6 @@ export const pages = {
       if (pageId === FACEBOOK_APP_PAGE_ID) {
         return EFacebookPageLinkedStatus.linked;
       }
-      // for now testing
-      // Mimic that Dino's is not connected
-      // Alow lucy's pizza test account through
-      if (pageId === "100919988703477" || pageId === "109089565530450") {
-        return EFacebookPageLinkedStatus.not_linked;
-      }
       // End of Citch hack
       const pageConnectData = {
         pageId,
