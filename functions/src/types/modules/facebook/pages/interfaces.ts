@@ -1,4 +1,4 @@
-import { EFacebookPageLinkedStatus } from './enums';
+import { EFacebookPageLinkedStatus } from "./enums";
 
 export interface IFacebookPageCheckInListOfPagesData {
   pageId: string;

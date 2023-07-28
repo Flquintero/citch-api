@@ -119,7 +119,7 @@ facebookRouter.post(
       await facebookService.pages.checkLinkedUserAccounts(req, next);
     const instagramAccountId =
       req.body.facebookPageData?.connected_instagram_account?.id;
-    const { postId, postPlacement } = req.body.instagramPostInfo;
+    const { postId, postPlacement, postMediaType } = req.body.instagramPostInfo;
     res.json({
       status: connectedStatusMessage,
       ...(instagramAccountId
@@ -127,6 +127,7 @@ facebookRouter.post(
         : null),
       ...(postId ? { postId } : null),
       ...(postPlacement ? { postPlacement } : null),
+      ...(postMediaType ? { postMediaType } : null),
     });
   }
 );
@@ -147,7 +148,7 @@ facebookRouter.post(
     );
     const instagramAccountId =
       req.body.facebookPageData?.connected_instagram_account?.id;
-    const { postId, postPlacement } = req.body.instagramPostInfo;
+    const { postId, postPlacement, postMediaType } = req.body.instagramPostInfo;
     res.json({
       status: connectedStatusMessage,
       ...(instagramAccountId
@@ -155,6 +156,7 @@ facebookRouter.post(
         : null),
       ...(postId ? { postId } : null),
       ...(postPlacement ? { postPlacement } : null),
+      ...(postMediaType ? { postMediaType } : null),
     });
   }
 );

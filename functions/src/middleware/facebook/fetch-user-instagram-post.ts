@@ -7,7 +7,6 @@ import {
 import { $facebookErrorHandler } from "../../utils/error-handler";
 //types
 import { Request, Response, NextFunction } from "express";
-//import { IFacebookPage } from "../../types/modules/facebook/pages/interfaces";
 
 let $getInstagramPost = async function (
   req: Request,
@@ -28,16 +27,15 @@ let $getInstagramPost = async function (
       userIGPayload,
       next
     );
-    console.log("userInstagramPosts", userInstagramPosts);
-    console.log("postShortCodeId", postShortCodeId);
     const postIdPayload = {
       postShortCodeId,
       userInstagramPosts,
     };
-    const postId = await __findInstagramPost(postIdPayload, next);
+    const post = await __findInstagramPost(postIdPayload, next);
     req.body.instagramPostInfo = {
-      postId: postId.id,
-      postPlacement: postId.media_product_type,
+      postId: post.id,
+      postPlacement: post.media_product_type,
+      postMediaType: post.media_type,
     };
     next();
   } catch (error: any) {
@@ -76,10 +74,10 @@ async function __checkForChosenPostInListOfPosts(
 ): Promise<any | void> {
   try {
     const { postShortCodeId, posts, pagesNext } = options;
-    const postIncludedArray = posts.filter((post: any) => {
+    // could use find below instead of filter, as we are only getting one
+    const postIncluded = posts.find((post: any) => {
       return post.shortcode === postShortCodeId;
     });
-    const postIncluded = !!postIncludedArray.length;
     // if doesnt find on current search page
     if (!postIncluded) {
       // if subsequent page available
@@ -99,7 +97,7 @@ async function __checkForChosenPostInListOfPosts(
       }
       // if finds it on current page
     } else {
-      return postIncludedArray[0];
+      return postIncluded;
     }
   } catch (error: any) {
     console.log("Error Checking IG Post is in List", error);

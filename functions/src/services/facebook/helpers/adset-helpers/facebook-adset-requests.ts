@@ -89,7 +89,8 @@ export async function _updateMultipleFacebookAdSets(
 
 export async function _updateFacebookAdSet(options: any, next: NextFunction) {
   try {
-    const { adSetId, audience, duration, status, platform } = options;
+    const { adSetId, audience, duration, status, platform, postPlacement } =
+      options;
     const adsetBody = {
       ...(audience
         ? {
@@ -107,7 +108,7 @@ export async function _updateFacebookAdSet(options: any, next: NextFunction) {
               // Age
               age_min: parseInt(audience.ageMin as string),
               age_max: parseInt(audience.ageMax as string),
-              ...(await _getTargetedPlacementObject(platform)),
+              ...(await _getTargetedPlacementObject(platform, postPlacement)),
             },
           }
         : null),
@@ -135,6 +136,7 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
       platform,
       objective,
       pageId,
+      postPlacement,
       status,
       audience,
     } = options;
@@ -165,7 +167,7 @@ export async function _createFacebookAdSet(options: any, next: NextFunction) {
         // Age
         age_min: parseInt(ageMin as string),
         age_max: parseInt(ageMax as string),
-        ...(await _getTargetedPlacementObject(platform)),
+        ...(await _getTargetedPlacementObject(platform, postPlacement)),
       },
       start_time: dayjs().unix(), // SET hardcoded here because these are placeholders to be updated by user in later steps
       end_time: dayjs().add(2, "M").unix(), // SET hardcoded here because these are placeholders to be updated by user in later steps
