@@ -15,6 +15,13 @@ export enum EInstagramAudiencePosition {
   AD = <any>"ad",
 }
 
+export enum EInstagramPostPlacement {
+  FEED = <any>"FEED",
+  STORY = <any>"STORY",
+  REELS = <any>"REELS",
+  AD = <any>"AD",
+}
+
 export enum EInstagramPostMediaType {
   CAROUSEL_ALBUM = <any>"CAROUSEL_ALBUM",
   IMAGE = <any>"IMAGE",

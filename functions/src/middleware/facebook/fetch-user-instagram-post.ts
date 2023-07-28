@@ -7,6 +7,7 @@ import {
 import { $facebookErrorHandler } from "../../utils/error-handler";
 //types
 import { Request, Response, NextFunction } from "express";
+import type { IInstagramPost } from "../../types/modules/facebook/pages/interfaces";
 
 let $getInstagramPost = async function (
   req: Request,
@@ -21,7 +22,7 @@ let $getInstagramPost = async function (
     const userIGPayload = {
       instagramAccountId,
       access_token,
-      fields: "shortcode,media_type,ig_id,id,media_product_type",
+      fields: "shortcode,media_type,id,media_product_type",
     };
     const userInstagramPosts = await _getUserInstagramPosts(
       userIGPayload,
@@ -33,9 +34,9 @@ let $getInstagramPost = async function (
     };
     const post = await __findInstagramPost(postIdPayload, next);
     req.body.instagramPostInfo = {
-      postId: post.id,
-      postPlacement: post.media_product_type,
-      postMediaType: post.media_type,
+      postId: (post as IInstagramPost).id,
+      postPlacement: (post as IInstagramPost).media_product_type,
+      postMediaType: (post as IInstagramPost).media_type,
     };
     next();
   } catch (error: any) {
@@ -52,7 +53,7 @@ export { $getInstagramPost };
 export async function __findInstagramPost(
   options: { postShortCodeId: string; userInstagramPosts: any },
   next: NextFunction
-): Promise<any | void> {
+): Promise<IInstagramPost | void> {
   try {
     const { postShortCodeId, userInstagramPosts } = options;
     const checkData: any = {
@@ -71,11 +72,11 @@ export async function __findInstagramPost(
 async function __checkForChosenPostInListOfPosts(
   options: any,
   next: NextFunction
-): Promise<any | void> {
+): Promise<IInstagramPost | void> {
   try {
     const { postShortCodeId, posts, pagesNext } = options;
     // could use find below instead of filter, as we are only getting one
-    const postIncluded = posts.find((post: any) => {
+    const postIncluded = posts.find((post: IInstagramPost) => {
       return post.shortcode === postShortCodeId;
     });
     // if doesnt find on current search page
