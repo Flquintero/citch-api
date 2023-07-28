@@ -16,11 +16,26 @@ export async function _createFacebookAdCreative(
   next: NextFunction
 ) {
   try {
-    const { postId, adAccount } = options;
+    const { postId, adAccount, platform, instagramAccount, facebookPage } =
+      options;
+
+    const isFacebook = platform === "facebook";
+    const isInstagram = platform === "instagram";
+
+    const facebookCreativeData = {
+      object_story_id: postId,
+    };
+
+    const instagramCreativeData = {
+      object_id: facebookPage,
+      instagram_user_id: instagramAccount,
+      source_instagram_media_id: postId,
+    };
 
     const adCreativeBody = {
       name: `${postId}-creative`,
-      object_story_id: postId,
+      ...(isFacebook ? { ...facebookCreativeData } : null),
+      ...(isInstagram ? { ...instagramCreativeData } : null),
     };
     const adCreativeResponse = await $apiRequest({
       method: "POST",

@@ -95,8 +95,15 @@ export const campaigns = {
   saveCampaignObjective: async function (req: Request, next: NextFunction) {
     try {
       const { saveCampaignObject, organizationId } = req.body;
-      const { campaignData, pageId, postId, platform, instagramAccountId } =
-        saveCampaignObject;
+      const {
+        campaignData,
+        pageId,
+        postId,
+        postPlacement,
+        postMediaType,
+        platform,
+        instagramAccountId,
+      } = saveCampaignObject;
       const {
         facebookObjectiveValues,
         facebookObjectiveIdentifier,
@@ -118,6 +125,8 @@ export const campaigns = {
         facebookObjectiveIdentifier,
         facebookPage: pageId,
         promotedPost: postId,
+        postPlacement: postPlacement,
+        postMediaType: postMediaType,
         ...(instagramAccountId
           ? { instagramAccount: instagramAccountId }
           : null),
@@ -203,11 +212,20 @@ export const campaigns = {
   publishCampaign: async function (req: Request, next: NextFunction) {
     try {
       const { savedDBFacebookCampaign } = req.body;
-      const { promotedPost, facebookAdAccount, facebookCampaigns } =
-        savedDBFacebookCampaign as IDBFacebookCampaign;
+      const {
+        promotedPost,
+        facebookAdAccount,
+        facebookCampaigns,
+        platform,
+        instagramAccount,
+        facebookPage,
+      } = savedDBFacebookCampaign as IDBFacebookCampaign;
       const adCreative = await _createFacebookAdCreative(
         {
+          platform: platform,
+          instagramAccount: instagramAccount,
           postId: promotedPost,
+          facebookPage: facebookPage,
           adAccount: facebookAdAccount,
         },
         next

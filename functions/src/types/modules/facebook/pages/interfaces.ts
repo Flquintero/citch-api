@@ -1,4 +1,8 @@
-import { EFacebookPageLinkedStatus } from './enums';
+import {
+  EFacebookPageLinkedStatus,
+  EInstagramPostMediaType,
+  EInstagramPostPlacement,
+} from "./enums";
 
 export interface IFacebookPageCheckInListOfPagesData {
   pageId: string;
@@ -22,4 +26,23 @@ export interface IFacebookPicture {
 
 export interface IFacebookPageLinkedStatus {
   status: EFacebookPageLinkedStatus;
+}
+
+export interface IInstagramPost {
+  id: string;
+  shortcode?: string;
+  media_type?: EInstagramPostMediaType;
+  media_product_type?: EInstagramPostPlacement;
+}
+
+export interface IInstagramUserPosts {
+  data: IInstagramPost[];
+  paging: {
+    cursors: {
+      after: string;
+      before: string;
+    };
+    previous?: string;
+    next?: string;
+  };
 }

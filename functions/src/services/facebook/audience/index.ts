@@ -57,8 +57,9 @@ export const audience = {
   saveCampaignAudience: async function (req: Request, next: NextFunction) {
     try {
       // Get  all campaigns back, we need the campaign id and the objective
-      const { facebookCampaigns } = req.body.savedDBFacebookCampaign;
-      const { audience, platform, pageId } = req.body.saveCampaignObject;
+      const { facebookCampaigns, facebookPage, platform, postPlacement } =
+        req.body.savedDBFacebookCampaign;
+      const { audience } = req.body.saveCampaignObject;
       const facebookPlatformCampaigns: any =
         await _getMultipleFacebookCampaigns(
           {
@@ -73,8 +74,9 @@ export const audience = {
             campaignId: campaignItem.id,
             adAccount: campaignItem.account_id,
             platform: platform,
+            postPlacement,
             objective: campaignItem.objective,
-            pageId: pageId,
+            pageId: facebookPage,
             status: EFacebookAdSetStatus.paused,
             audience,
           };
@@ -126,7 +128,8 @@ export const audience = {
   },
   updateCampaignAudience: async function (req: Request, next: NextFunction) {
     try {
-      const { facebookCampaigns, platform } = req.body.savedDBFacebookCampaign;
+      const { facebookCampaigns, platform, postPlacement } =
+        req.body.savedDBFacebookCampaign;
       const { audience } = req.body.saveCampaignObject;
       // going directly for the first one in the array of campaigns but in the future we might need to get multiple and compare
       // im assuming that they will always have the same data in citch reach and hence just pick the first
@@ -147,6 +150,7 @@ export const audience = {
           adSetId: adSetId.id,
           audience,
           platform,
+          postPlacement,
         };
       });
       return await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
