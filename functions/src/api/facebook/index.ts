@@ -78,7 +78,7 @@ facebookRouter.post(
     const postId = req.body.facebookPostData?.id;
     res.json({
       status: connectedStatusMessage,
-      ...(postId ? { postId: postId } : null),
+      ...(postId ? { postId } : null),
     });
   }
 );
@@ -100,7 +100,7 @@ facebookRouter.post(
     const postId = req.body.facebookPostData?.id;
     res.json({
       status: connectedStatusMessage,
-      ...(postId ? { postId: postId } : null),
+      ...(postId ? { postId } : null),
     });
   }
 );
@@ -119,11 +119,15 @@ facebookRouter.post(
       await facebookService.pages.checkLinkedUserAccounts(req, next);
     const instagramAccountId =
       req.body.facebookPageData?.connected_instagram_account?.id;
+    const { postId, postPlacement, postMediaType } = req.body.instagramPostInfo;
     res.json({
       status: connectedStatusMessage,
       ...(instagramAccountId
         ? { instagramAccountId: instagramAccountId }
         : null),
+      ...(postId ? { postId } : null),
+      ...(postPlacement ? { postPlacement } : null),
+      ...(postMediaType ? { postMediaType } : null),
     });
   }
 );
@@ -144,11 +148,15 @@ facebookRouter.post(
     );
     const instagramAccountId =
       req.body.facebookPageData?.connected_instagram_account?.id;
+    const { postId, postPlacement, postMediaType } = req.body.instagramPostInfo;
     res.json({
       status: connectedStatusMessage,
       ...(instagramAccountId
         ? { instagramAccountId: instagramAccountId }
         : null),
+      ...(postId ? { postId } : null),
+      ...(postPlacement ? { postPlacement } : null),
+      ...(postMediaType ? { postMediaType } : null),
     });
   }
 );
