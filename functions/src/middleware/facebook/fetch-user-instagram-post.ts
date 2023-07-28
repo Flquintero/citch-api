@@ -7,7 +7,10 @@ import {
 import { $facebookErrorHandler } from "../../utils/error-handler";
 //types
 import { Request, Response, NextFunction } from "express";
-import type { IInstagramPost } from "../../types/modules/facebook/pages/interfaces";
+import type {
+  IInstagramPost,
+  IInstagramUserPosts,
+} from "../../types/modules/facebook/pages/interfaces";
 
 let $getInstagramPost = async function (
   req: Request,
@@ -24,10 +27,8 @@ let $getInstagramPost = async function (
       access_token,
       fields: "shortcode,media_type,id,media_product_type",
     };
-    const userInstagramPosts = await _getUserInstagramPosts(
-      userIGPayload,
-      next
-    );
+    const userInstagramPosts: IInstagramUserPosts =
+      await _getUserInstagramPosts(userIGPayload, next);
     const postIdPayload = {
       postShortCodeId,
       userInstagramPosts,
@@ -51,12 +52,16 @@ export { $getInstagramPost };
 
 // If connected to our Business Manager
 export async function __findInstagramPost(
-  options: { postShortCodeId: string; userInstagramPosts: any },
+  options: { postShortCodeId: string; userInstagramPosts: IInstagramUserPosts },
   next: NextFunction
 ): Promise<IInstagramPost | void> {
   try {
     const { postShortCodeId, userInstagramPosts } = options;
-    const checkData: any = {
+    const checkData: {
+      postShortCodeId: string;
+      posts: IInstagramPost[];
+      pagesNext?: string;
+    } = {
       postShortCodeId,
       posts: userInstagramPosts.data,
       pagesNext: userInstagramPosts.paging?.next,
@@ -70,7 +75,11 @@ export async function __findInstagramPost(
 
 // checks to see if a page is included in the list of pages returned from a next url
 async function __checkForChosenPostInListOfPosts(
-  options: any,
+  options: {
+    postShortCodeId: string;
+    posts: IInstagramPost[];
+    pagesNext?: string;
+  },
   next: NextFunction
 ): Promise<IInstagramPost | void> {
   try {

@@ -34,3 +34,15 @@ export interface IInstagramPost {
   media_type?: EInstagramPostMediaType;
   media_product_type?: EInstagramPostPlacement;
 }
+
+export interface IInstagramUserPosts {
+  data: IInstagramPost[];
+  paging: {
+    cursors: {
+      after: string;
+      before: string;
+    };
+    previous?: string;
+    next?: string;
+  };
+}
