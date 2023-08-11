@@ -3,6 +3,7 @@ import {
   $facebookErrorHandler,
   $firestormErrorHandler,
 } from "../../../utils/error-handler";
+import { $toDocReference } from "../../../utils/firebase/firestorm/firebase-firestorm-helpers";
 
 // Local Helpers
 import {
@@ -55,6 +56,30 @@ export const campaigns = {
       //   // include code to get existing facebook campaigns
       // }
       return campaign.data();
+    } catch (error: any) {
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  getCampaigns: async function (req: Request, next: NextFunction) {
+    try {
+      const { organizationId } = req.body;
+      const organizationReference = await $toDocReference(
+        `organizations/${organizationId}`
+      );
+      const campaignsResponse = await FACEBOOK_CAMPAIGNS_DB.where(
+        "organization",
+        "==",
+        organizationReference
+      ).get();
+      console.log("empty", campaignsResponse.empty);
+      campaignsResponse.forEach((doc) => {
+        console.log(doc.id, "=>", doc.data());
+      });
+      // const campaignsList = (campaignsResponse as any).map((doc: any) =>
+      //   doc.data()
+      // );
+      // console.log("campaigns", campaignsList);
+      // return campaigns.data();
     } catch (error: any) {
       return next(await $firestormErrorHandler(error));
     }
