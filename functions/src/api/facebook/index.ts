@@ -344,10 +344,24 @@ facebookRouter.post(
 );
 
 facebookRouter.get(
-  "/campaigns",
+  "/campaigns/promoted-post",
   [$appCheckVerification, $idTokenVerification, $getUserOrganization],
   async (req: Request, res: Response, next: NextFunction) => {
-    res.json(await facebookService.campaigns.getCampaigns(req, next));
+    res.json(
+      await facebookService.campaigns.getPromotedPostCampaigns(req, next)
+    );
+  }
+);
+facebookRouter.get(
+  "/campaigns/:campaignId/insights",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.campaigns.getCampaignInsights(req, next));
   }
 );
 

@@ -10,6 +10,7 @@ import { NextFunction } from "express";
 import {
   FACEBOOK_GRAPH_URL,
   FACEBOOK_API_VERSION,
+  FACEBOOK_SYSTEM_USER_TOKEN,
 } from "../../helpers/facebook-constants";
 
 export async function _getUserInstagramPosts(
@@ -30,6 +31,21 @@ export async function _getUserInstagramPosts(
     return next(await $facebookErrorHandler(error));
   }
 }
-export async function _getInstagramPost() {
-  return;
+export async function _getInstagramPost(
+  options: { postId: string; fields: string },
+  next: NextFunction
+) {
+  try {
+    const { fields, postId } = options;
+    const stringifiedParams = await $stringifyParams({
+      fields,
+      access_token: FACEBOOK_SYSTEM_USER_TOKEN,
+    });
+    return await $apiRequest({
+      url: `${FACEBOOK_GRAPH_URL}/${FACEBOOK_API_VERSION}/${postId}?${stringifiedParams}`,
+    });
+  } catch (error: any) {
+    console.log("Error Instagram Get Post", error);
+    return next(await $facebookErrorHandler(error));
+  }
 }

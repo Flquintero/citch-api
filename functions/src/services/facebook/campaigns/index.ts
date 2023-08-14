@@ -18,10 +18,13 @@ import {
   _deleteMultipleFacebookCampaigns,
   _deleteFacebookCampaign,
   _getMultipleFacebookCampaignEdge,
+  _getFacebookCampaignEdge,
 } from "./helpers/facebook-campaign-requests";
+import { _getFacebookAdInsights } from "./helpers/ facebook-insights-requests";
 import { _updateMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
 import { _createFacebookAdCreative } from "../helpers/adcreative-helpers/facebook-adcreative-requests";
 import { _createMultipleFacebookAds } from "../helpers/ad-helpers/facebook-ad-requests";
+import { _getInstagramPost } from "../pages/helpers/instagram-post-requests";
 
 // Types
 import {
@@ -70,17 +73,71 @@ export const campaigns = {
         "organization",
         "==",
         organizationReference
-      ).get();
-      console.log("empty", campaignsResponse.empty);
-      campaignsResponse.forEach((doc) => {
-        console.log(doc.id, "=>", doc.data());
+      )
+        .orderBy("updatedOn", "desc")
+        .limit(6)
+        .get();
+      const campaignsList: any[] = [];
+      if (campaignsResponse.empty) return campaignsList;
+      campaignsResponse.forEach((doc: any) => {
+        campaignsList.push({ id: doc.id, ...doc.data() });
       });
-      // const campaignsList = (campaignsResponse as any).map((doc: any) =>
-      //   doc.data()
-      // );
-      // console.log("campaigns", campaignsList);
-      // return campaigns.data();
+      return campaignsList;
     } catch (error: any) {
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  getCampaignInsights: async function (req: Request, next: NextFunction) {
+    const { savedDBFacebookCampaign } = req.body;
+    const { facebookCampaigns } = savedDBFacebookCampaign;
+    console.log("facebookCampaigns", facebookCampaigns);
+    try {
+      const adCreative = await _getFacebookCampaignEdge(
+        {
+          // TAKE OFF TEST ID AND LEAVE DYNAMIC
+          campaignId: "23848084221850097", // facebookCampaigns[0],
+          targetEdge: "ads",
+          targetFields: "id",
+        },
+        next
+      );
+      console.log("adCreatives", adCreative);
+      return await _getFacebookAdInsights(
+        {
+          adId: adCreative.data[0].id, // IF we start doing citch reach this need to actually get the insight for 2 campaigns
+          fields:
+            "reach,spend,date_start,date_stop,campaign_name,campaign_id,actions",
+          date_preset: "maximum",
+        },
+        next
+      );
+    } catch (error: any) {
+      console.log("Error Facebook Get Campaign Insights", error);
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  getPromotedPostCampaigns: async function (req: Request, next: NextFunction) {
+    try {
+      const campaigns = await this.getCampaigns(req, next);
+      const promotedPostCampaigns = await Promise.all(
+        (campaigns as any[]).map(async (campaign: any) => {
+          const postResponse = await _getInstagramPost(
+            {
+              postId: campaign.promotedPost,
+              fields: "permalink",
+            },
+            next
+          );
+          return {
+            postUrl: postResponse.permalink,
+            platform: campaign.platform,
+            id: campaign.id,
+          };
+        })
+      );
+      return promotedPostCampaigns;
+    } catch (error: any) {
+      console.log("Error Facebook Get Promoted PostCampaigns", error);
       return next(await $firestormErrorHandler(error));
     }
   },
