@@ -105,8 +105,7 @@ export const campaigns = {
       return await _getFacebookAdInsights(
         {
           adId: adCreative.data[0].id, // IF we start doing citch reach this need to actually get the insight for 2 campaigns
-          fields:
-            "reach,spend,date_start,date_stop,campaign_name,campaign_id,actions",
+          fields: "reach,spend,date_start,date_stop,campaign_name,actions",
           date_preset: "maximum",
         },
         next
