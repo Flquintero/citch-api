@@ -74,6 +74,7 @@ export const campaigns = {
         "==",
         organizationReference
       )
+        .where("campaignPublishedByUser", "==", true)
         .orderBy("updatedOn", "desc")
         .limit(6)
         .get();
@@ -95,7 +96,7 @@ export const campaigns = {
       const adCreative = await _getFacebookCampaignEdge(
         {
           // TAKE OFF TEST ID AND LEAVE DYNAMIC
-          campaignId: "23848084221850097", // facebookCampaigns[0],
+          campaignId: facebookCampaigns[0], // "23848084221850097"
           targetEdge: "ads",
           targetFields: "id",
         },
@@ -292,7 +293,7 @@ export const campaigns = {
   },
   publishCampaign: async function (req: Request, next: NextFunction) {
     try {
-      const { savedDBFacebookCampaign } = req.body;
+      const { savedDBFacebookCampaign, savedFBFacebookCampaignId } = req.body;
       const {
         promotedPost,
         facebookAdAccount,
@@ -341,13 +342,21 @@ export const campaigns = {
         };
       });
       await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
-      return await _updateMultipleFacebookCampaigns(
+      await _updateMultipleFacebookCampaigns(
         {
           campaignData: { status: EFacebookCampaignStatus.active },
           facebookCampaigns: facebookCampaigns as string[],
         },
         next
       );
+      console.log("savedDBFacebookCampaign", savedFBFacebookCampaignId);
+      return await this.updateCampaign(
+        {
+          campaignId: savedFBFacebookCampaignId,
+          updateData: { campaignPublishedByUser: true },
+        },
+        next
+      ); // update campaign to show is published
     } catch (error: any) {
       console.log("Error Facebook Publish Campaign", error);
       return next(await $facebookErrorHandler(error));

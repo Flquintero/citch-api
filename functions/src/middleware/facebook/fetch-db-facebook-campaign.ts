@@ -17,6 +17,7 @@ let $getDBFacebookCampaign = async function (
     if (req.params.campaignId) campaignId = req.params.campaignId;
     const campaign: IDBFacebookCampaign | void =
       await facebookService.campaigns.getCampaign({ id: campaignId }, next);
+    req.body.savedFBFacebookCampaignId = campaignId;
     req.body.savedDBFacebookCampaign = campaign;
     next();
   } catch (error: any) {
