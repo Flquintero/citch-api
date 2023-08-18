@@ -343,6 +343,28 @@ facebookRouter.post(
   }
 );
 
+facebookRouter.get(
+  "/campaigns/promoted-post",
+  [$appCheckVerification, $idTokenVerification, $getUserOrganization],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(
+      await facebookService.campaigns.getPromotedPostCampaigns(req, next)
+    );
+  }
+);
+facebookRouter.get(
+  "/campaigns/:campaignId/insights",
+  [
+    $appCheckVerification,
+    $idTokenVerification,
+    $getUserOrganization,
+    $getDBFacebookCampaign,
+  ],
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.json(await facebookService.campaigns.getCampaignInsights(req, next));
+  }
+);
+
 facebookRouter.get("*", async (req: Request, res: Response) => {
   res.status(404).send("This route does not exist.");
 });

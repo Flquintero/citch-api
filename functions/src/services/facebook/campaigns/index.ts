@@ -3,6 +3,7 @@ import {
   $facebookErrorHandler,
   $firestormErrorHandler,
 } from "../../../utils/error-handler";
+import { $toDocReference } from "../../../utils/firebase/firestorm/firebase-firestorm-helpers";
 
 // Local Helpers
 import {
@@ -17,10 +18,13 @@ import {
   _deleteMultipleFacebookCampaigns,
   _deleteFacebookCampaign,
   _getMultipleFacebookCampaignEdge,
+  _getFacebookCampaignEdge,
 } from "./helpers/facebook-campaign-requests";
+import { _getFacebookAdInsights } from "./helpers/ facebook-insights-requests";
 import { _updateMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
 import { _createFacebookAdCreative } from "../helpers/adcreative-helpers/facebook-adcreative-requests";
 import { _createMultipleFacebookAds } from "../helpers/ad-helpers/facebook-ad-requests";
+import { _getInstagramPost } from "../pages/helpers/instagram-post-requests";
 
 // Types
 import {
@@ -56,6 +60,84 @@ export const campaigns = {
       // }
       return campaign.data();
     } catch (error: any) {
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  getCampaigns: async function (req: Request, next: NextFunction) {
+    try {
+      const { organizationId } = req.body;
+      const organizationReference = await $toDocReference(
+        `organizations/${organizationId}`
+      );
+      const campaignsResponse = await FACEBOOK_CAMPAIGNS_DB.where(
+        "organization",
+        "==",
+        organizationReference
+      )
+        .where("campaignPublishedByUser", "==", true)
+        .orderBy("updatedOn", "desc")
+        .limit(6)
+        .get();
+      const campaignsList: any[] = [];
+      if (campaignsResponse.empty) return campaignsList;
+      campaignsResponse.forEach((doc: any) => {
+        campaignsList.push({ id: doc.id, ...doc.data() });
+      });
+      return campaignsList;
+    } catch (error: any) {
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  getCampaignInsights: async function (req: Request, next: NextFunction) {
+    const { savedDBFacebookCampaign } = req.body;
+    const { facebookCampaigns } = savedDBFacebookCampaign;
+    console.log("facebookCampaigns", facebookCampaigns);
+    try {
+      const adCreative = await _getFacebookCampaignEdge(
+        {
+          // TAKE OFF TEST ID AND LEAVE DYNAMIC
+          campaignId: facebookCampaigns[0], // "23848084221850097"
+          targetEdge: "ads",
+          targetFields: "id",
+        },
+        next
+      );
+      console.log("adCreatives", adCreative);
+      return await _getFacebookAdInsights(
+        {
+          adId: adCreative.data[0].id, // IF we start doing citch reach this need to actually get the insight for 2 campaigns
+          fields: "reach,spend,date_start,date_stop,campaign_name,actions",
+          date_preset: "maximum",
+        },
+        next
+      );
+    } catch (error: any) {
+      console.log("Error Facebook Get Campaign Insights", error);
+      return next(await $firestormErrorHandler(error));
+    }
+  },
+  getPromotedPostCampaigns: async function (req: Request, next: NextFunction) {
+    try {
+      const campaigns = await this.getCampaigns(req, next);
+      const promotedPostCampaigns = await Promise.all(
+        (campaigns as any[]).map(async (campaign: any) => {
+          const postResponse = await _getInstagramPost(
+            {
+              postId: campaign.promotedPost,
+              fields: "permalink",
+            },
+            next
+          );
+          return {
+            postUrl: postResponse.permalink,
+            platform: campaign.platform,
+            id: campaign.id,
+          };
+        })
+      );
+      return promotedPostCampaigns;
+    } catch (error: any) {
+      console.log("Error Facebook Get Promoted PostCampaigns", error);
       return next(await $firestormErrorHandler(error));
     }
   },
@@ -211,7 +293,7 @@ export const campaigns = {
   },
   publishCampaign: async function (req: Request, next: NextFunction) {
     try {
-      const { savedDBFacebookCampaign } = req.body;
+      const { savedDBFacebookCampaign, savedFBFacebookCampaignId } = req.body;
       const {
         promotedPost,
         facebookAdAccount,
@@ -260,13 +342,21 @@ export const campaigns = {
         };
       });
       await _updateMultipleFacebookAdSets({ adSetPayloadArray }, next);
-      return await _updateMultipleFacebookCampaigns(
+      await _updateMultipleFacebookCampaigns(
         {
           campaignData: { status: EFacebookCampaignStatus.active },
           facebookCampaigns: facebookCampaigns as string[],
         },
         next
       );
+      console.log("savedDBFacebookCampaign", savedFBFacebookCampaignId);
+      return await this.updateCampaign(
+        {
+          campaignId: savedFBFacebookCampaignId,
+          updateData: { campaignPublishedByUser: true },
+        },
+        next
+      ); // update campaign to show is published
     } catch (error: any) {
       console.log("Error Facebook Publish Campaign", error);
       return next(await $facebookErrorHandler(error));
