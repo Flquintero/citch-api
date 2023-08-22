@@ -30,6 +30,9 @@ export async function _createFacebookAdCreative(
       object_id: facebookPage,
       instagram_user_id: instagramAccount,
       source_instagram_media_id: postId,
+      // define what we will do with this field for carousels as it gives error when they dont have ctas
+      // call_to_action:
+      //   "{'type':'LEARN_MORE','value':{'link': 'https://www.instagram.com/droneskyvisuals/'}}",
     };
 
     const adCreativeBody = {
