@@ -97,7 +97,7 @@ export const campaigns = {
       const adCreative = await _getFacebookCampaignEdge(
         {
           // TAKE OFF TEST ID AND LEAVE DYNAMIC
-          campaignId: "23848084221850097", // facebookCampaigns[0],
+          campaignId: facebookCampaigns[0], //"23848084221850097",
           targetEdge: "ads",
           targetFields: "id",
         },
@@ -106,7 +106,7 @@ export const campaigns = {
       const fbCampaign = await _getFacebookCampaign(
         {
           // TAKE OFF TEST ID AND LEAVE DYNAMIC
-          campaignId: "23848084221850097", // facebookCampaigns[0],
+          campaignId: facebookCampaigns[0], //"23848084221850097",
           targetFields:
             "budget_remaining, lifetime_budget, start_time, stop_time,status, recommendations",
         },
