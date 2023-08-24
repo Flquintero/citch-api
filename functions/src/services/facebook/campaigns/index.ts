@@ -19,6 +19,7 @@ import {
   _deleteFacebookCampaign,
   _getMultipleFacebookCampaignEdge,
   _getFacebookCampaignEdge,
+  _getFacebookCampaign,
 } from "./helpers/facebook-campaign-requests";
 import { _getFacebookAdInsights } from "./helpers/ facebook-insights-requests";
 import { _updateMultipleFacebookAdSets } from "../helpers/adset-helpers/facebook-adset-requests";
@@ -96,14 +97,22 @@ export const campaigns = {
       const adCreative = await _getFacebookCampaignEdge(
         {
           // TAKE OFF TEST ID AND LEAVE DYNAMIC
-          campaignId: facebookCampaigns[0], // "23848084221850097"
+          campaignId: "23848084221850097", // facebookCampaigns[0],
           targetEdge: "ads",
           targetFields: "id",
         },
         next
       );
-      console.log("adCreatives", adCreative);
-      return await _getFacebookAdInsights(
+      const fbCampaign = await _getFacebookCampaign(
+        {
+          // TAKE OFF TEST ID AND LEAVE DYNAMIC
+          campaignId: "23848084221850097", // facebookCampaigns[0],
+          targetFields:
+            "budget_remaining, lifetime_budget, start_time, stop_time,status, recommendations",
+        },
+        next
+      );
+      const adInsigths = await _getFacebookAdInsights(
         {
           adId: adCreative.data[0].id, // IF we start doing citch reach this need to actually get the insight for 2 campaigns
           fields: "reach,spend,date_start,date_stop,campaign_name,actions",
@@ -111,6 +120,25 @@ export const campaigns = {
         },
         next
       );
+      const {
+        budget_remaining,
+        lifetime_budget,
+        start_time,
+        stop_time,
+        status,
+      } = fbCampaign;
+      const { reach, spend, actions } = adInsigths.data[0];
+      const campaignInsightsObject = {
+        budget_remaining,
+        lifetime_budget,
+        start_time,
+        stop_time,
+        status,
+        reach,
+        spend,
+        actions,
+      };
+      return campaignInsightsObject;
     } catch (error: any) {
       console.log("Error Facebook Get Campaign Insights", error);
       return next(await $firestormErrorHandler(error));
